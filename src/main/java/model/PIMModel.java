@@ -80,6 +80,11 @@ public final class PIMModel {
         return Collections.unmodifiableList(new ArrayList<PIR>(records.values()));
     }
 
+    /** Search stored PIRs. Malformed criteria throw InvalidSearchException (US7). */
+    public List<PIR> search(String criteria) {
+        return PIRSearch.search(listRecords(), criteria);
+    }
+
     /** Replace a note while preserving its ID and type (US6). */
     public Note updateNote(String id, String text) {
         requireType(id, RecordType.NOTE);
