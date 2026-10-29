@@ -29,4 +29,10 @@ public final class Contact extends PIR {
     public String getMobileNumber() {
         return mobileNumber;
     }
+    
+    @Override
+    public String toDetailString() {
+        return "[CONTACT] " + getId() + "\nName: " + name
+                + "\nAddress: " + address + "\nMobile: " + mobileNumber;
+    }
 }

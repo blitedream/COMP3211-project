@@ -13,7 +13,9 @@ public abstract class PIR {
     }
 
     public abstract RecordType getType();
-
+    
+    public abstract String toDetailString();
+    
     protected static String requireText(String value, String field) {
         if (value == null || value.trim().isEmpty()) {
             throw new InvalidRecordException(field + " must be nonblank");

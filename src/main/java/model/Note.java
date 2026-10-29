@@ -17,4 +17,8 @@ public final class Note extends PIR {
     public String getText() {
         return text;
     }
+    @Override
+    public String toDetailString() {
+        return "[NOTE] " + getId() + "\nText: " + text;
+    }
 }
