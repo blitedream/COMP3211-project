@@ -32,4 +32,10 @@ public final class Event extends PIR {
     public LocalDateTime getAlarmTime() {
         return alarmTime;
     }
+    
+    @Override
+    public String toDetailString() {
+        return "[EVENT] " + getId() + "\nDescription: " + description
+                + "\nStart: " + startTime + "\nAlarm: " + alarmTime;
+    }
 }

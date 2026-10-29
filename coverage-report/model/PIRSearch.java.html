@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PIRSearch.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">model</a> &gt; <span class="el_source">PIRSearch.java</span></div><h1>PIRSearch.java</h1><pre class="source lang-java linenums">package model;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+/** Evaluates a search criteria string against PIR records (US7). */
+public final class PIRSearch {
+<span class="fc" id="L14">    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter</span>
+<span class="fc" id="L15">            .ofPattern(&quot;uuuu-MM-dd HH:mm&quot;)</span>
+<span class="fc" id="L16">            .withResolverStyle(ResolverStyle.STRICT);</span>
+
+    private PIRSearch() {
+    }
+
+    /**
+     * Return matching records in input order.
+     * Accepts one comparison, or comparisons combined with {@code !}, {@code &amp;&amp;},
+     * {@code ||}, and parentheses. {@code !} binds tighter than {@code &amp;&amp;},
+     * which binds tighter than {@code ||}.
+     */
+    public static List&lt;PIR&gt; search(List&lt;PIR&gt; records, String criteria) {
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (records == null) {</span>
+<span class="fc" id="L29">            throw new InvalidSearchException(&quot;records is required&quot;);</span>
+        }
+<span class="fc" id="L31">        Criterion criterion = parse(criteria);</span>
+<span class="fc" id="L32">        List&lt;PIR&gt; matches = new ArrayList&lt;PIR&gt;();</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        for (PIR record : records) {</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">            if (record == null) {</span>
+<span class="fc" id="L35">                throw new InvalidSearchException(&quot;record is required&quot;);</span>
+            }
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            if (criterion.matches(record)) {</span>
+<span class="fc" id="L38">                matches.add(record);</span>
+            }
+<span class="fc" id="L40">        }</span>
+<span class="fc" id="L41">        return Collections.unmodifiableList(matches);</span>
+    }
+
+    private static Criterion parse(String criteria) {
+<span class="fc bfc" id="L45" title="All 4 branches covered.">        if (criteria == null || criteria.trim().isEmpty()) {</span>
+<span class="fc" id="L46">            throw new InvalidSearchException(&quot;criteria is required&quot;);</span>
+        }
+<span class="fc" id="L48">        Parser parser = new Parser(tokenize(criteria));</span>
+<span class="fc" id="L49">        Criterion criterion = parser.parseOr();</span>
+<span class="fc" id="L50">        parser.end();</span>
+<span class="fc" id="L51">        return criterion;</span>
+    }
+
+    private static boolean isTimeField(String field) {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        return field.equalsIgnoreCase(&quot;deadline&quot;)</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">                || field.equalsIgnoreCase(&quot;start&quot;)</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">                || field.equalsIgnoreCase(&quot;alarm&quot;);</span>
+    }
+
+    private static boolean isTimeOperator(String operator) {
+<span class="pc bpc" id="L61" title="1 of 6 branches missed.">        return &quot;&lt;&quot;.equals(operator) || &quot;&gt;&quot;.equals(operator) || &quot;=&quot;.equals(operator);</span>
+    }
+
+    private static LocalDateTime parseTime(String text) {
+        try {
+<span class="fc" id="L66">            return LocalDateTime.parse(text, TIME_FORMAT);</span>
+<span class="fc" id="L67">        } catch (DateTimeParseException ex) {</span>
+<span class="fc" id="L68">            throw new InvalidSearchException(&quot;Invalid date/time: &quot; + text);</span>
+        }
+    }
+
+    private static boolean isTextField(String field) {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        return field.equalsIgnoreCase(&quot;text&quot;)</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">                || field.equalsIgnoreCase(&quot;description&quot;)</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">                || field.equalsIgnoreCase(&quot;name&quot;)</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">                || field.equalsIgnoreCase(&quot;address&quot;)</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">                || field.equalsIgnoreCase(&quot;mobile&quot;);</span>
+    }
+
+    private static List&lt;Token&gt; tokenize(String criteria) {
+<span class="fc" id="L81">        List&lt;Token&gt; tokens = new ArrayList&lt;Token&gt;();</span>
+<span class="fc" id="L82">        int index = 0;</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        while (index &lt; criteria.length()) {</span>
+<span class="fc" id="L84">            char current = criteria.charAt(index);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            if (Character.isWhitespace(current)) {</span>
+<span class="fc" id="L86">                index++;</span>
+<span class="fc" id="L87">                continue;</span>
+            }
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            if (current == '&quot;') {</span>
+<span class="fc" id="L90">                int start = index + 1;</span>
+<span class="fc" id="L91">                int end = criteria.indexOf('&quot;', start);</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">                if (end &lt; 0) {</span>
+<span class="fc" id="L93">                    throw new InvalidSearchException(&quot;Unclosed quote&quot;);</span>
+                }
+<span class="fc bfc" id="L95" title="All 2 branches covered.">                if (end == start) {</span>
+<span class="fc" id="L96">                    throw new InvalidSearchException(&quot;Quoted value is empty&quot;);</span>
+                }
+<span class="fc" id="L98">                tokens.add(new Token(criteria.substring(start, end), true));</span>
+<span class="fc" id="L99">                index = end + 1;</span>
+<span class="fc" id="L100">                continue;</span>
+            }
+<span class="fc bfc" id="L102" title="All 6 branches covered.">            if (current == '!' || current == '(' || current == ')') {</span>
+<span class="fc" id="L103">                tokens.add(new Token(String.valueOf(current), false));</span>
+<span class="fc" id="L104">                index++;</span>
+<span class="fc" id="L105">                continue;</span>
+            }
+<span class="fc" id="L107">            int start = index;</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            while (index &lt; criteria.length()</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">                    &amp;&amp; !Character.isWhitespace(criteria.charAt(index))</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">                    &amp;&amp; criteria.charAt(index) != '!'</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">                    &amp;&amp; criteria.charAt(index) != '('</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">                    &amp;&amp; criteria.charAt(index) != ')') {</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">                if (criteria.charAt(index) == '&quot;') {</span>
+<span class="nc" id="L114">                    throw new InvalidSearchException(&quot;Unexpected quote&quot;);</span>
+                }
+<span class="fc" id="L116">                index++;</span>
+            }
+<span class="fc" id="L118">            tokens.add(new Token(criteria.substring(start, index), false));</span>
+<span class="fc" id="L119">        }</span>
+<span class="fc" id="L120">        return tokens;</span>
+    }
+
+    private static RecordType typeNamed(String name) {
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        for (RecordType type : RecordType.values()) {</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">            if (type.name().equalsIgnoreCase(name)) {</span>
+<span class="fc" id="L126">                return type;</span>
+            }
+        }
+<span class="fc" id="L129">        throw new InvalidSearchException(&quot;Unknown type: &quot; + name);</span>
+    }
+
+    private static String textOf(PIR record, String field) {
+<span class="fc bfc" id="L133" title="All 4 branches covered.">        if (field.equalsIgnoreCase(&quot;text&quot;) &amp;&amp; record instanceof Note) {</span>
+<span class="fc" id="L134">            return ((Note) record).getText();</span>
+        }
+<span class="fc bfc" id="L136" title="All 4 branches covered.">        if (field.equalsIgnoreCase(&quot;description&quot;) &amp;&amp; record instanceof Task) {</span>
+<span class="fc" id="L137">            return ((Task) record).getDescription();</span>
+        }
+<span class="fc bfc" id="L139" title="All 4 branches covered.">        if (field.equalsIgnoreCase(&quot;description&quot;) &amp;&amp; record instanceof Event) {</span>
+<span class="fc" id="L140">            return ((Event) record).getDescription();</span>
+        }
+<span class="fc bfc" id="L142" title="All 4 branches covered.">        if (field.equalsIgnoreCase(&quot;name&quot;) &amp;&amp; record instanceof Contact) {</span>
+<span class="fc" id="L143">            return ((Contact) record).getName();</span>
+        }
+<span class="fc bfc" id="L145" title="All 4 branches covered.">        if (field.equalsIgnoreCase(&quot;address&quot;) &amp;&amp; record instanceof Contact) {</span>
+<span class="fc" id="L146">            return ((Contact) record).getAddress();</span>
+        }
+<span class="fc bfc" id="L148" title="All 4 branches covered.">        if (field.equalsIgnoreCase(&quot;mobile&quot;) &amp;&amp; record instanceof Contact) {</span>
+<span class="fc" id="L149">            return ((Contact) record).getMobileNumber();</span>
+        }
+<span class="fc" id="L151">        return null;</span>
+    }
+
+    private static LocalDateTime timeOf(PIR record, String field) {
+<span class="fc bfc" id="L155" title="All 4 branches covered.">        if (field.equalsIgnoreCase(&quot;deadline&quot;) &amp;&amp; record instanceof Task) {</span>
+<span class="fc" id="L156">            return ((Task) record).getDeadline();</span>
+        }
+<span class="fc bfc" id="L158" title="All 4 branches covered.">        if (field.equalsIgnoreCase(&quot;start&quot;) &amp;&amp; record instanceof Event) {</span>
+<span class="fc" id="L159">            return ((Event) record).getStartTime();</span>
+        }
+<span class="fc bfc" id="L161" title="All 4 branches covered.">        if (field.equalsIgnoreCase(&quot;alarm&quot;) &amp;&amp; record instanceof Event) {</span>
+<span class="fc" id="L162">            return ((Event) record).getAlarmTime();</span>
+        }
+<span class="fc" id="L164">        return null;</span>
+    }
+
+    private interface Criterion {
+        boolean matches(PIR record);
+    }
+
+    private static final class TypeCriterion implements Criterion {
+        private final RecordType type;
+
+<span class="fc" id="L174">        private TypeCriterion(RecordType type) {</span>
+<span class="fc" id="L175">            this.type = type;</span>
+<span class="fc" id="L176">        }</span>
+
+        @Override
+        public boolean matches(PIR record) {
+<span class="fc bfc" id="L180" title="All 2 branches covered.">            return record.getType() == type;</span>
+        }
+    }
+
+    private static final class TextCriterion implements Criterion {
+        private final String field;
+        private final String needle;
+
+<span class="fc" id="L188">        private TextCriterion(String field, String needle) {</span>
+<span class="fc" id="L189">            this.field = field;</span>
+<span class="fc" id="L190">            this.needle = needle;</span>
+<span class="fc" id="L191">        }</span>
+
+        @Override
+        public boolean matches(PIR record) {
+<span class="fc" id="L195">            String value = textOf(record, field);</span>
+<span class="fc bfc" id="L196" title="All 4 branches covered.">            return value != null &amp;&amp; value.toLowerCase(Locale.ROOT).contains(needle);</span>
+        }
+    }
+
+    private static final class TimeCriterion implements Criterion {
+        private final String field;
+        private final String operator;
+        private final LocalDateTime instant;
+
+<span class="fc" id="L205">        private TimeCriterion(String field, String operator, LocalDateTime instant) {</span>
+<span class="fc" id="L206">            this.field = field;</span>
+<span class="fc" id="L207">            this.operator = operator;</span>
+<span class="fc" id="L208">            this.instant = instant;</span>
+<span class="fc" id="L209">        }</span>
+
+        @Override
+        public boolean matches(PIR record) {
+<span class="fc" id="L213">            LocalDateTime value = timeOf(record, field);</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">            if (value == null) {</span>
+<span class="fc" id="L215">                return false;</span>
+            }
+<span class="fc" id="L217">            int compared = value.compareTo(instant);</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">            if (&quot;&lt;&quot;.equals(operator)) {</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">                return compared &lt; 0;</span>
+            }
+<span class="fc bfc" id="L221" title="All 2 branches covered.">            if (&quot;&gt;&quot;.equals(operator)) {</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">                return compared &gt; 0;</span>
+            }
+<span class="fc bfc" id="L224" title="All 2 branches covered.">            return compared == 0;</span>
+        }
+    }
+
+    private static final class NotCriterion implements Criterion {
+        private final Criterion inner;
+
+<span class="fc" id="L231">        private NotCriterion(Criterion inner) {</span>
+<span class="fc" id="L232">            this.inner = inner;</span>
+<span class="fc" id="L233">        }</span>
+
+        @Override
+        public boolean matches(PIR record) {
+<span class="fc bfc" id="L237" title="All 2 branches covered.">            return !inner.matches(record);</span>
+        }
+    }
+
+    private static final class AndCriterion implements Criterion {
+        private final Criterion left;
+        private final Criterion right;
+
+<span class="fc" id="L245">        private AndCriterion(Criterion left, Criterion right) {</span>
+<span class="fc" id="L246">            this.left = left;</span>
+<span class="fc" id="L247">            this.right = right;</span>
+<span class="fc" id="L248">        }</span>
+
+        @Override
+        public boolean matches(PIR record) {
+<span class="fc bfc" id="L252" title="All 4 branches covered.">            return left.matches(record) &amp;&amp; right.matches(record);</span>
+        }
+    }
+
+    private static final class OrCriterion implements Criterion {
+        private final Criterion left;
+        private final Criterion right;
+
+<span class="fc" id="L260">        private OrCriterion(Criterion left, Criterion right) {</span>
+<span class="fc" id="L261">            this.left = left;</span>
+<span class="fc" id="L262">            this.right = right;</span>
+<span class="fc" id="L263">        }</span>
+
+        @Override
+        public boolean matches(PIR record) {
+<span class="fc bfc" id="L267" title="All 4 branches covered.">            return left.matches(record) || right.matches(record);</span>
+        }
+    }
+
+    private static final class Parser {
+        private final List&lt;Token&gt; tokens;
+        private int index;
+
+<span class="fc" id="L275">        private Parser(List&lt;Token&gt; tokens) {</span>
+<span class="fc" id="L276">            this.tokens = tokens;</span>
+<span class="fc" id="L277">        }</span>
+
+        private Criterion parseOr() {
+<span class="fc" id="L280">            Criterion left = parseAnd();</span>
+<span class="fc bfc" id="L281" title="All 2 branches covered.">            while (consume(&quot;||&quot;)) {</span>
+<span class="fc" id="L282">                left = new OrCriterion(left, parseAnd());</span>
+            }
+<span class="fc" id="L284">            return left;</span>
+        }
+
+        private Criterion parseAnd() {
+<span class="fc" id="L288">            Criterion left = parseNot();</span>
+<span class="fc bfc" id="L289" title="All 2 branches covered.">            while (consume(&quot;&amp;&amp;&quot;)) {</span>
+<span class="fc" id="L290">                left = new AndCriterion(left, parseNot());</span>
+            }
+<span class="fc" id="L292">            return left;</span>
+        }
+
+        private Criterion parseNot() {
+<span class="fc bfc" id="L296" title="All 2 branches covered.">            if (consume(&quot;!&quot;)) {</span>
+<span class="fc" id="L297">                return new NotCriterion(parseNot());</span>
+            }
+<span class="fc" id="L299">            return parsePrimary();</span>
+        }
+
+        private Criterion parsePrimary() {
+<span class="fc bfc" id="L303" title="All 2 branches covered.">            if (consume(&quot;(&quot;)) {</span>
+<span class="fc" id="L304">                Criterion inner = parseOr();</span>
+<span class="fc" id="L305">                expect(&quot;)&quot;);</span>
+<span class="fc" id="L306">                return inner;</span>
+            }
+<span class="fc" id="L308">            return parseComparison();</span>
+        }
+
+        private Criterion parseComparison() {
+<span class="fc bfc" id="L312" title="All 2 branches covered.">            if (index + 2 &gt;= tokens.size()) {</span>
+<span class="fc" id="L313">                throw new InvalidSearchException(&quot;Operator is missing an operand&quot;);</span>
+            }
+<span class="fc" id="L315">            Token fieldToken = tokens.get(index);</span>
+<span class="fc" id="L316">            Token operatorToken = tokens.get(index + 1);</span>
+<span class="fc" id="L317">            Token value = tokens.get(index + 2);</span>
+<span class="pc bpc" id="L318" title="2 of 4 branches missed.">            if (fieldToken.quoted || operatorToken.quoted) {</span>
+<span class="nc" id="L319">                throw new InvalidSearchException(&quot;Malformed criteria&quot;);</span>
+            }
+<span class="fc" id="L321">            index += 3;</span>
+<span class="fc" id="L322">            String field = fieldToken.text;</span>
+<span class="fc" id="L323">            String operator = operatorToken.text;</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">            if (field.equalsIgnoreCase(&quot;type&quot;)) {</span>
+<span class="pc bpc" id="L325" title="2 of 4 branches missed.">                if (!operator.equals(&quot;=&quot;) || value.quoted) {</span>
+<span class="nc" id="L326">                    throw new InvalidSearchException(&quot;Expected: type = note|task|event|contact&quot;);</span>
+                }
+<span class="fc" id="L328">                return new TypeCriterion(typeNamed(value.text));</span>
+            }
+<span class="fc bfc" id="L330" title="All 2 branches covered.">            if (isTextField(field)) {</span>
+<span class="pc bpc" id="L331" title="2 of 4 branches missed.">                if (!operator.equalsIgnoreCase(&quot;contains&quot;) || !value.quoted) {</span>
+<span class="nc" id="L332">                    throw new InvalidSearchException(&quot;Expected: &quot; + field + &quot; contains \&quot;...\&quot;&quot;);</span>
+                }
+<span class="fc" id="L334">                return new TextCriterion(field, value.text.toLowerCase(Locale.ROOT));</span>
+            }
+<span class="fc bfc" id="L336" title="All 2 branches covered.">            if (isTimeField(field)) {</span>
+<span class="pc bpc" id="L337" title="2 of 4 branches missed.">                if (!isTimeOperator(operator) || !value.quoted) {</span>
+<span class="nc" id="L338">                    throw new InvalidSearchException(</span>
+                            &quot;Expected: &quot; + field + &quot; &lt;, &gt;, or = \&quot;yyyy-MM-dd HH:mm\&quot;&quot;);
+                }
+<span class="fc" id="L341">                return new TimeCriterion(field, operator, parseTime(value.text));</span>
+            }
+<span class="fc" id="L343">            throw new InvalidSearchException(&quot;Unknown field: &quot; + field);</span>
+        }
+
+        private boolean consume(String text) {
+<span class="pc bpc" id="L347" title="1 of 4 branches missed.">            if (index &lt; tokens.size() &amp;&amp; !tokens.get(index).quoted</span>
+<span class="fc bfc" id="L348" title="All 2 branches covered.">                    &amp;&amp; tokens.get(index).text.equals(text)) {</span>
+<span class="fc" id="L349">                index++;</span>
+<span class="fc" id="L350">                return true;</span>
+            }
+<span class="fc" id="L352">            return false;</span>
+        }
+
+        private void expect(String text) {
+<span class="fc bfc" id="L356" title="All 2 branches covered.">            if (!consume(text)) {</span>
+<span class="fc" id="L357">                throw new InvalidSearchException(&quot;Expected &quot; + text);</span>
+            }
+<span class="fc" id="L359">        }</span>
+
+        private void end() {
+<span class="fc bfc" id="L362" title="All 2 branches covered.">            if (index &lt; tokens.size()) {</span>
+<span class="fc" id="L363">                throw new InvalidSearchException(&quot;Unexpected token: &quot; + tokens.get(index).text);</span>
+            }
+<span class="fc" id="L365">        }</span>
+    }
+
+    private static final class Token {
+        private final String text;
+        private final boolean quoted;
+
+<span class="fc" id="L372">        private Token(String text, boolean quoted) {</span>
+<span class="fc" id="L373">            this.text = text;</span>
+<span class="fc" id="L374">            this.quoted = quoted;</span>
+<span class="fc" id="L375">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

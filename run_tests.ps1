@@ -10,4 +10,8 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & javac -Xlint:-options -source 8 -target 8 -cp $mainOut -d $testOut @testSources
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & java -cp "$mainOut;$testOut" model.ModelCoreTest
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& java -cp "$mainOut;$testOut" model.SearchTest
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& java -cp "$mainOut;$testOut" model.PersistenceTest
 exit $LASTEXITCODE

@@ -25,4 +25,10 @@ public final class Task extends PIR {
     public LocalDateTime getDeadline() {
         return deadline;
     }
+
+    @Override
+    public String toDetailString() {
+        return "[TASK] " + getId() + "\nDescription: " + description
+                + "\nDeadline: " + deadline;
+    }
 }

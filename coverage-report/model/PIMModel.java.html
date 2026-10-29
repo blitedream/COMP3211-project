@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PIMModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">model</a> &gt; <span class="el_source">PIMModel.java</span></div><h1>PIMModel.java</h1><pre class="source lang-java linenums">package model;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+/** In-memory PIR collection. Search and persistence can use its public API. */
+public final class PIMModel {
+<span class="fc" id="L14">    private final Map&lt;String, PIR&gt; records = new LinkedHashMap&lt;String, PIR&gt;();</span>
+
+<span class="fc" id="L16">    public PIMModel() {</span>
+<span class="fc" id="L17">    }</span>
+
+    /** Construct a model from decoded PIRs; duplicate IDs are rejected. */
+<span class="fc" id="L20">    public PIMModel(Collection&lt;? extends PIR&gt; initialRecords) {</span>
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        if (initialRecords == null) {</span>
+<span class="nc" id="L22">            throw new InvalidRecordException(&quot;initialRecords is required&quot;);</span>
+        }
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        for (PIR record : initialRecords) {</span>
+<span class="fc" id="L25">            addRecord(record);</span>
+<span class="fc" id="L26">        }</span>
+<span class="fc" id="L27">    }</span>
+
+    /** Add a decoded PIR without changing its stable ID. */
+    public PIR addRecord(PIR record) {
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (record == null) {</span>
+<span class="nc" id="L32">            throw new InvalidRecordException(&quot;record is required&quot;);</span>
+        }
+<span class="pc bpc" id="L34" title="1 of 8 branches missed.">        if (!(record instanceof Note || record instanceof Task</span>
+                || record instanceof Event || record instanceof Contact)) {
+<span class="nc" id="L36">            throw new InvalidRecordException(&quot;Unsupported PIR type&quot;);</span>
+        }
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (records.containsKey(record.getId())) {</span>
+<span class="fc" id="L39">            throw new DuplicateRecordException(&quot;Record ID already exists: &quot; + record.getId());</span>
+        }
+<span class="fc" id="L41">        records.put(record.getId(), record);</span>
+<span class="fc" id="L42">        return record;</span>
+    }
+
+    public Note createNote(String text) {
+<span class="fc" id="L46">        Note record = new Note(newId(), text);</span>
+<span class="fc" id="L47">        addRecord(record);</span>
+<span class="fc" id="L48">        return record;</span>
+    }
+
+    public Task createTask(String description, LocalDateTime deadline) {
+<span class="fc" id="L52">        Task record = new Task(newId(), description, deadline);</span>
+<span class="fc" id="L53">        addRecord(record);</span>
+<span class="fc" id="L54">        return record;</span>
+    }
+
+    public Event createEvent(String description, LocalDateTime startTime,
+                             LocalDateTime alarmTime) {
+<span class="fc" id="L59">        Event record = new Event(newId(), description, startTime, alarmTime);</span>
+<span class="fc" id="L60">        addRecord(record);</span>
+<span class="fc" id="L61">        return record;</span>
+    }
+
+    public Contact createContact(String name, String address, String mobileNumber) {
+<span class="fc" id="L65">        Contact record = new Contact(newId(), name, address, mobileNumber);</span>
+<span class="fc" id="L66">        addRecord(record);</span>
+<span class="fc" id="L67">        return record;</span>
+    }
+
+    public PIR getRecord(String id) {
+<span class="fc" id="L71">        PIR record = records.get(id);</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (record == null) {</span>
+<span class="fc" id="L73">            throw new RecordNotFoundException(id);</span>
+        }
+<span class="fc" id="L75">        return record;</span>
+    }
+
+    /** Return an immutable snapshot in insertion order. */
+    public List&lt;PIR&gt; listRecords() {
+<span class="fc" id="L80">        return Collections.unmodifiableList(new ArrayList&lt;PIR&gt;(records.values()));</span>
+    }
+
+    /** Search stored PIRs. Malformed criteria throw InvalidSearchException (US7). */
+    public List&lt;PIR&gt; search(String criteria) {
+<span class="fc" id="L85">        return PIRSearch.search(listRecords(), criteria);</span>
+    }
+
+    /** Replace a note while preserving its ID and type (US6). */
+    public Note updateNote(String id, String text) {
+<span class="fc" id="L90">        requireType(id, RecordType.NOTE);</span>
+<span class="fc" id="L91">        Note updated = new Note(id, text);</span>
+<span class="fc" id="L92">        records.put(id, updated);</span>
+<span class="fc" id="L93">        return updated;</span>
+    }
+
+    /** Replace a task while preserving its ID and type (US6). */
+    public Task updateTask(String id, String description, LocalDateTime deadline) {
+<span class="fc" id="L98">        requireType(id, RecordType.TASK);</span>
+<span class="fc" id="L99">        Task updated = new Task(id, description, deadline);</span>
+<span class="fc" id="L100">        records.put(id, updated);</span>
+<span class="fc" id="L101">        return updated;</span>
+    }
+
+    /** Replace an event while preserving its ID and type (US6). */
+    public Event updateEvent(String id, String description, LocalDateTime startTime,
+                             LocalDateTime alarmTime) {
+<span class="fc" id="L107">        requireType(id, RecordType.EVENT);</span>
+<span class="fc" id="L108">        Event updated = new Event(id, description, startTime, alarmTime);</span>
+<span class="fc" id="L109">        records.put(id, updated);</span>
+<span class="fc" id="L110">        return updated;</span>
+    }
+
+    /** Replace a contact while preserving its ID and type (US6). */
+    public Contact updateContact(String id, String name, String address,
+                                 String mobileNumber) {
+<span class="fc" id="L116">        requireType(id, RecordType.CONTACT);</span>
+<span class="fc" id="L117">        Contact updated = new Contact(id, name, address, mobileNumber);</span>
+<span class="fc" id="L118">        records.put(id, updated);</span>
+<span class="fc" id="L119">        return updated;</span>
+    }
+
+    public PIR deleteRecord(String id) {
+<span class="fc" id="L123">        PIR removed = records.remove(id);</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        if (removed == null) {</span>
+<span class="fc" id="L125">            throw new RecordNotFoundException(id);</span>
+        }
+<span class="fc" id="L127">        return removed;</span>
+    }
+
+    private void requireType(String id, RecordType expected) {
+<span class="fc" id="L131">        PIR current = getRecord(id);</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        if (current.getType() != expected) {</span>
+<span class="fc" id="L133">            throw new InvalidRecordException(&quot;Record &quot; + id + &quot; is not a &quot; + expected);</span>
+        }
+<span class="fc" id="L135">    }</span>
+
+    private static String newId() {
+<span class="fc" id="L138">        return UUID.randomUUID().toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
