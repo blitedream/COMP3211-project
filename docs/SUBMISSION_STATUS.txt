@@ -1,0 +1,12 @@
+Current integration status
+
+Model tests and CLI integration checks pass.
+Latest slides and speaker scripts are in presentation_v2.
+
+Document review follow-ups
+- Align the SRS structure with Lecture 04, including preface, glossary, user requirements and architecture.
+- List every FR explicitly in the requirements coverage table.
+- Complete design API descriptions and improve pagination.
+- Include the complete search reference in the user manual.
+
+The group must record the two required videos and complete the official Honour Declaration with agreed contributions and accurate AI disclosure.
