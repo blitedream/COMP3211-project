@@ -11,6 +11,8 @@ import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /** Saves a PIMModel to a .pim file, or loads one back from it (US10, US11). */
 public final class PIMFileCodec {
@@ -88,6 +90,7 @@ public final class PIMFileCodec {
         String name = null, address = null, mobile = null;
         LocalDateTime deadline = null, start = null, alarm = null;
 
+        Set<String> seen = new HashSet<String>();
         for (String line : block) {
             int eq = line.indexOf('=');
             if (eq <= 0) {
@@ -95,6 +98,9 @@ public final class PIMFileCodec {
             }
             String key = line.substring(0, eq);
             String value = line.substring(eq + 1);
+            if (!seen.add(key)) {
+                throw new InvalidRecordException("Duplicate field: " + key);
+            }
             if (key.equals("type")) {
                 type = value;
             } else if (key.equals("id")) {

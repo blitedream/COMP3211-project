@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 tmp/
 build/
+
+# Local presentation review images and duplicate archives
+presentation_v2/qa/
+presentation_v2/*.jpg
+presentation_v2/*.zip

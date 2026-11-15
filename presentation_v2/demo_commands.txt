@@ -1,0 +1,22 @@
+help
+create note "Buy milk"
+create task "Finish report" "2026-11-19 18:00"
+create event "Group meeting" "2026-11-18 15:00" "2026-11-18 14:30"
+create contact Alice "Hong Kong" 12345678
+print all
+search (type = task || type = event) && description contains "report"
+search type = note && text contains "nothing"
+update <TASK_ID> deadline "2026-11-20 18:00"
+print <TASK_ID>
+save "demo.pim"
+quit
+# Restart with .\run.ps1
+load "demo.pim"
+print all
+create task bad "2026-02-30 10:00"
+print missing
+print all
+delete <TASK_ID>
+print all
+save "demo.pim"
+quit

@@ -11,175 +11,181 @@ import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /** Saves a PIMModel to a .pim file, or loads one back from it (US10, US11). */
 public final class PIMFileCodec {
 
     /** Same time format as B's PIRSearch. */
-<span class="fc" id="L19">    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter</span>
-<span class="fc" id="L20">            .ofPattern(&quot;uuuu-MM-dd HH:mm&quot;)</span>
-<span class="fc" id="L21">            .withResolverStyle(ResolverStyle.STRICT);</span>
+<span class="fc" id="L21">    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter</span>
+<span class="fc" id="L22">            .ofPattern(&quot;uuuu-MM-dd HH:mm&quot;)</span>
+<span class="fc" id="L23">            .withResolverStyle(ResolverStyle.STRICT);</span>
 
     private PIMFileCodec() {
     }
 
     /** US10: write all PIRs to a file. An existing file is overwritten. */
     public static void save(PIMModel model, Path file) throws IOException {
-<span class="fc" id="L28">        StringBuilder content = new StringBuilder();</span>
-<span class="fc bfc" id="L29" title="All 2 branches covered.">        for (PIR record : model.listRecords()) {</span>
-<span class="fc" id="L30">            writeBlock(content, record);</span>
-<span class="fc" id="L31">            content.append('\n'); // blank line between record blocks</span>
-<span class="fc" id="L32">        }</span>
-<span class="fc" id="L33">        Files.write(file, content.toString().getBytes(StandardCharsets.UTF_8));</span>
-<span class="fc" id="L34">    }</span>
+<span class="fc" id="L30">        StringBuilder content = new StringBuilder();</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        for (PIR record : model.listRecords()) {</span>
+<span class="fc" id="L32">            writeBlock(content, record);</span>
+<span class="fc" id="L33">            content.append('\n'); // blank line between record blocks</span>
+<span class="fc" id="L34">        }</span>
+<span class="fc" id="L35">        Files.write(file, content.toString().getBytes(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L36">    }</span>
 
     private static void writeBlock(StringBuilder out, PIR record) {
-<span class="fc" id="L37">        out.append(&quot;type=&quot;).append(record.getType().name()).append('\n');</span>
-<span class="fc" id="L38">        out.append(&quot;id=&quot;).append(record.getId()).append('\n');</span>
-<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (record instanceof Note) {</span>
-<span class="fc" id="L40">            Note note = (Note) record;</span>
-<span class="fc" id="L41">            out.append(&quot;text=&quot;).append(encode(note.getText())).append('\n');</span>
-<span class="fc bfc" id="L42" title="All 2 branches covered.">        } else if (record instanceof Task) {</span>
-<span class="fc" id="L43">            Task task = (Task) record;</span>
-<span class="fc" id="L44">            out.append(&quot;description=&quot;).append(encode(task.getDescription())).append('\n');</span>
-<span class="fc" id="L45">            out.append(&quot;deadline=&quot;).append(format(task.getDeadline())).append('\n');</span>
-<span class="fc bfc" id="L46" title="All 2 branches covered.">        } else if (record instanceof Event) {</span>
-<span class="fc" id="L47">            Event event = (Event) record;</span>
-<span class="fc" id="L48">            out.append(&quot;description=&quot;).append(encode(event.getDescription())).append('\n');</span>
-<span class="fc" id="L49">            out.append(&quot;start=&quot;).append(format(event.getStartTime())).append('\n');</span>
-<span class="fc" id="L50">            out.append(&quot;alarm=&quot;).append(format(event.getAlarmTime())).append('\n');</span>
-<span class="pc bpc" id="L51" title="1 of 2 branches missed.">        } else if (record instanceof Contact) {</span>
-<span class="fc" id="L52">            Contact contact = (Contact) record;</span>
-<span class="fc" id="L53">            out.append(&quot;name=&quot;).append(encode(contact.getName())).append('\n');</span>
-<span class="fc" id="L54">            out.append(&quot;address=&quot;).append(encode(contact.getAddress())).append('\n');</span>
-<span class="fc" id="L55">            out.append(&quot;mobile=&quot;).append(encode(contact.getMobileNumber())).append('\n');</span>
-<span class="fc" id="L56">        } else {</span>
-<span class="nc" id="L57">            throw new IllegalArgumentException(&quot;Unsupported PIR type&quot;);</span>
+<span class="fc" id="L39">        out.append(&quot;type=&quot;).append(record.getType().name()).append('\n');</span>
+<span class="fc" id="L40">        out.append(&quot;id=&quot;).append(record.getId()).append('\n');</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (record instanceof Note) {</span>
+<span class="fc" id="L42">            Note note = (Note) record;</span>
+<span class="fc" id="L43">            out.append(&quot;text=&quot;).append(encode(note.getText())).append('\n');</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        } else if (record instanceof Task) {</span>
+<span class="fc" id="L45">            Task task = (Task) record;</span>
+<span class="fc" id="L46">            out.append(&quot;description=&quot;).append(encode(task.getDescription())).append('\n');</span>
+<span class="fc" id="L47">            out.append(&quot;deadline=&quot;).append(format(task.getDeadline())).append('\n');</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        } else if (record instanceof Event) {</span>
+<span class="fc" id="L49">            Event event = (Event) record;</span>
+<span class="fc" id="L50">            out.append(&quot;description=&quot;).append(encode(event.getDescription())).append('\n');</span>
+<span class="fc" id="L51">            out.append(&quot;start=&quot;).append(format(event.getStartTime())).append('\n');</span>
+<span class="fc" id="L52">            out.append(&quot;alarm=&quot;).append(format(event.getAlarmTime())).append('\n');</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        } else if (record instanceof Contact) {</span>
+<span class="fc" id="L54">            Contact contact = (Contact) record;</span>
+<span class="fc" id="L55">            out.append(&quot;name=&quot;).append(encode(contact.getName())).append('\n');</span>
+<span class="fc" id="L56">            out.append(&quot;address=&quot;).append(encode(contact.getAddress())).append('\n');</span>
+<span class="fc" id="L57">            out.append(&quot;mobile=&quot;).append(encode(contact.getMobileNumber())).append('\n');</span>
+<span class="fc" id="L58">        } else {</span>
+<span class="nc" id="L59">            throw new IllegalArgumentException(&quot;Unsupported PIR type&quot;);</span>
         }
-<span class="fc" id="L59">    }</span>
+<span class="fc" id="L61">    }</span>
 
     /** US11: load from a file. An empty file is an empty model; a malformed file throws a clear error. */
     public static PIMModel load(Path file) throws IOException {
-<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (!Files.exists(file)) {</span>
-<span class="fc" id="L64">            throw new IOException(&quot;File not found: &quot; + file);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (!Files.exists(file)) {</span>
+<span class="fc" id="L66">            throw new IOException(&quot;File not found: &quot; + file);</span>
         }
-<span class="fc" id="L66">        List&lt;String&gt; lines = Files.readAllLines(file, StandardCharsets.UTF_8);</span>
-<span class="fc" id="L67">        List&lt;PIR&gt; records = new ArrayList&lt;PIR&gt;();</span>
-<span class="fc" id="L68">        List&lt;String&gt; block = new ArrayList&lt;String&gt;();</span>
-<span class="fc bfc" id="L69" title="All 2 branches covered.">        for (String line : lines) {</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">            if (line.trim().isEmpty()) {</span>
-<span class="pc bpc" id="L71" title="1 of 2 branches missed.">                if (!block.isEmpty()) {</span>
-<span class="fc" id="L72">                    records.add(parseBlock(block));</span>
-<span class="fc" id="L73">                    block = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L68">        List&lt;String&gt; lines = Files.readAllLines(file, StandardCharsets.UTF_8);</span>
+<span class="fc" id="L69">        List&lt;PIR&gt; records = new ArrayList&lt;PIR&gt;();</span>
+<span class="fc" id="L70">        List&lt;String&gt; block = new ArrayList&lt;String&gt;();</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        for (String line : lines) {</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (line.trim().isEmpty()) {</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">                if (!block.isEmpty()) {</span>
+<span class="fc" id="L74">                    records.add(parseBlock(block));</span>
+<span class="fc" id="L75">                    block = new ArrayList&lt;String&gt;();</span>
                 }
             } else {
-<span class="fc" id="L76">                block.add(line);</span>
+<span class="fc" id="L78">                block.add(line);</span>
             }
-<span class="fc" id="L78">        }</span>
-<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (!block.isEmpty()) {</span>
-<span class="fc" id="L80">            records.add(parseBlock(block));</span>
+<span class="fc" id="L80">        }</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (!block.isEmpty()) {</span>
+<span class="fc" id="L82">            records.add(parseBlock(block));</span>
         }
         // Duplicate IDs are rejected by the PIMModel constructor (implemented by A)
-<span class="fc" id="L83">        return new PIMModel(records);</span>
+<span class="fc" id="L85">        return new PIMModel(records);</span>
     }
 
     private static PIR parseBlock(List&lt;String&gt; block) {
-<span class="fc" id="L87">        String type = null, id = null, text = null, description = null;</span>
-<span class="fc" id="L88">        String name = null, address = null, mobile = null;</span>
-<span class="fc" id="L89">        LocalDateTime deadline = null, start = null, alarm = null;</span>
+<span class="fc" id="L89">        String type = null, id = null, text = null, description = null;</span>
+<span class="fc" id="L90">        String name = null, address = null, mobile = null;</span>
+<span class="fc" id="L91">        LocalDateTime deadline = null, start = null, alarm = null;</span>
 
-<span class="fc bfc" id="L91" title="All 2 branches covered.">        for (String line : block) {</span>
-<span class="fc" id="L92">            int eq = line.indexOf('=');</span>
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">            if (eq &lt;= 0) {</span>
-<span class="nc" id="L94">                throw new InvalidRecordException(&quot;Malformed line: &quot; + line);</span>
+<span class="fc" id="L93">        Set&lt;String&gt; seen = new HashSet&lt;String&gt;();</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (String line : block) {</span>
+<span class="fc" id="L95">            int eq = line.indexOf('=');</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">            if (eq &lt;= 0) {</span>
+<span class="nc" id="L97">                throw new InvalidRecordException(&quot;Malformed line: &quot; + line);</span>
             }
-<span class="fc" id="L96">            String key = line.substring(0, eq);</span>
-<span class="fc" id="L97">            String value = line.substring(eq + 1);</span>
-<span class="fc bfc" id="L98" title="All 2 branches covered.">            if (key.equals(&quot;type&quot;)) {</span>
-<span class="fc" id="L99">                type = value;</span>
-<span class="fc bfc" id="L100" title="All 2 branches covered.">            } else if (key.equals(&quot;id&quot;)) {</span>
-<span class="fc" id="L101">                id = value;</span>
-<span class="fc bfc" id="L102" title="All 2 branches covered.">            } else if (key.equals(&quot;text&quot;)) {</span>
-<span class="fc" id="L103">                text = decode(value);</span>
-<span class="fc bfc" id="L104" title="All 2 branches covered.">            } else if (key.equals(&quot;description&quot;)) {</span>
-<span class="fc" id="L105">                description = decode(value);</span>
-<span class="fc bfc" id="L106" title="All 2 branches covered.">            } else if (key.equals(&quot;deadline&quot;)) {</span>
-<span class="fc" id="L107">                deadline = parseTime(value);</span>
-<span class="fc bfc" id="L108" title="All 2 branches covered.">            } else if (key.equals(&quot;start&quot;)) {</span>
-<span class="fc" id="L109">                start = parseTime(value);</span>
-<span class="fc bfc" id="L110" title="All 2 branches covered.">            } else if (key.equals(&quot;alarm&quot;)) {</span>
-<span class="fc" id="L111">                alarm = parseTime(value);</span>
-<span class="fc bfc" id="L112" title="All 2 branches covered.">            } else if (key.equals(&quot;name&quot;)) {</span>
-<span class="fc" id="L113">                name = decode(value);</span>
-<span class="fc bfc" id="L114" title="All 2 branches covered.">            } else if (key.equals(&quot;address&quot;)) {</span>
-<span class="fc" id="L115">                address = decode(value);</span>
-<span class="pc bpc" id="L116" title="1 of 2 branches missed.">            } else if (key.equals(&quot;mobile&quot;)) {</span>
-<span class="fc" id="L117">                mobile = decode(value);</span>
+<span class="fc" id="L99">            String key = line.substring(0, eq);</span>
+<span class="fc" id="L100">            String value = line.substring(eq + 1);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">            if (!seen.add(key)) {</span>
+<span class="fc" id="L102">                throw new InvalidRecordException(&quot;Duplicate field: &quot; + key);</span>
+            }
+<span class="fc bfc" id="L104" title="All 2 branches covered.">            if (key.equals(&quot;type&quot;)) {</span>
+<span class="fc" id="L105">                type = value;</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">            } else if (key.equals(&quot;id&quot;)) {</span>
+<span class="fc" id="L107">                id = value;</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            } else if (key.equals(&quot;text&quot;)) {</span>
+<span class="fc" id="L109">                text = decode(value);</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">            } else if (key.equals(&quot;description&quot;)) {</span>
+<span class="fc" id="L111">                description = decode(value);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">            } else if (key.equals(&quot;deadline&quot;)) {</span>
+<span class="fc" id="L113">                deadline = parseTime(value);</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">            } else if (key.equals(&quot;start&quot;)) {</span>
+<span class="fc" id="L115">                start = parseTime(value);</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">            } else if (key.equals(&quot;alarm&quot;)) {</span>
+<span class="fc" id="L117">                alarm = parseTime(value);</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            } else if (key.equals(&quot;name&quot;)) {</span>
+<span class="fc" id="L119">                name = decode(value);</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">            } else if (key.equals(&quot;address&quot;)) {</span>
+<span class="fc" id="L121">                address = decode(value);</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">            } else if (key.equals(&quot;mobile&quot;)) {</span>
+<span class="fc" id="L123">                mobile = decode(value);</span>
             } else {
-<span class="nc" id="L119">                throw new InvalidRecordException(&quot;Unknown field: &quot; + key);</span>
+<span class="nc" id="L125">                throw new InvalidRecordException(&quot;Unknown field: &quot; + key);</span>
             }
-<span class="fc" id="L121">        }</span>
-<span class="pc bpc" id="L122" title="2 of 4 branches missed.">        if (id == null || id.trim().isEmpty()) {</span>
-<span class="nc" id="L123">            throw new InvalidRecordException(&quot;id is missing&quot;);</span>
+<span class="fc" id="L127">        }</span>
+<span class="pc bpc" id="L128" title="2 of 4 branches missed.">        if (id == null || id.trim().isEmpty()) {</span>
+<span class="nc" id="L129">            throw new InvalidRecordException(&quot;id is missing&quot;);</span>
         }
-<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        if (type == null) {</span>
-<span class="nc" id="L126">            throw new InvalidRecordException(&quot;type is missing&quot;);</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (type == null) {</span>
+<span class="nc" id="L132">            throw new InvalidRecordException(&quot;type is missing&quot;);</span>
         }
-<span class="fc bfc" id="L128" title="All 2 branches covered.">        if (type.equals(&quot;NOTE&quot;)) {</span>
-<span class="fc" id="L129">            return new Note(id, requireText(text, &quot;text&quot;));</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        if (type.equals(&quot;NOTE&quot;)) {</span>
+<span class="fc" id="L135">            return new Note(id, requireText(text, &quot;text&quot;));</span>
         }
-<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (type.equals(&quot;TASK&quot;)) {</span>
-<span class="fc" id="L132">            return new Task(id, requireText(description, &quot;description&quot;),</span>
-<span class="fc" id="L133">                    requireTime(deadline, &quot;deadline&quot;));</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        if (type.equals(&quot;TASK&quot;)) {</span>
+<span class="fc" id="L138">            return new Task(id, requireText(description, &quot;description&quot;),</span>
+<span class="fc" id="L139">                    requireTime(deadline, &quot;deadline&quot;));</span>
         }
-<span class="fc bfc" id="L135" title="All 2 branches covered.">        if (type.equals(&quot;EVENT&quot;)) {</span>
-<span class="fc" id="L136">            return new Event(id, requireText(description, &quot;description&quot;),</span>
-<span class="fc" id="L137">                    requireTime(start, &quot;start&quot;), requireTime(alarm, &quot;alarm&quot;));</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        if (type.equals(&quot;EVENT&quot;)) {</span>
+<span class="fc" id="L142">            return new Event(id, requireText(description, &quot;description&quot;),</span>
+<span class="fc" id="L143">                    requireTime(start, &quot;start&quot;), requireTime(alarm, &quot;alarm&quot;));</span>
         }
-<span class="fc bfc" id="L139" title="All 2 branches covered.">        if (type.equals(&quot;CONTACT&quot;)) {</span>
-<span class="fc" id="L140">            return new Contact(id, requireText(name, &quot;name&quot;),</span>
-<span class="fc" id="L141">                    requireText(address, &quot;address&quot;), requireText(mobile, &quot;mobile&quot;));</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        if (type.equals(&quot;CONTACT&quot;)) {</span>
+<span class="fc" id="L146">            return new Contact(id, requireText(name, &quot;name&quot;),</span>
+<span class="fc" id="L147">                    requireText(address, &quot;address&quot;), requireText(mobile, &quot;mobile&quot;));</span>
         }
-<span class="fc" id="L143">        throw new InvalidRecordException(&quot;Unknown type: &quot; + type);</span>
+<span class="fc" id="L149">        throw new InvalidRecordException(&quot;Unknown type: &quot; + type);</span>
     }
 
     private static String requireText(String value, String field) {
-<span class="pc bpc" id="L147" title="1 of 4 branches missed.">        if (value == null || value.trim().isEmpty()) {</span>
-<span class="fc" id="L148">            throw new InvalidRecordException(field + &quot; is missing&quot;);</span>
+<span class="pc bpc" id="L153" title="1 of 4 branches missed.">        if (value == null || value.trim().isEmpty()) {</span>
+<span class="fc" id="L154">            throw new InvalidRecordException(field + &quot; is missing&quot;);</span>
         }
-<span class="fc" id="L150">        return value;</span>
+<span class="fc" id="L156">        return value;</span>
     }
 
     private static LocalDateTime requireTime(LocalDateTime value, String field) {
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        if (value == null) {</span>
-<span class="nc" id="L155">            throw new InvalidRecordException(field + &quot; is missing&quot;);</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L161">            throw new InvalidRecordException(field + &quot; is missing&quot;);</span>
         }
-<span class="fc" id="L157">        return value;</span>
+<span class="fc" id="L163">        return value;</span>
     }
 
     private static String format(LocalDateTime time) {
-<span class="fc" id="L161">        return TIME_FORMAT.format(time);</span>
+<span class="fc" id="L167">        return TIME_FORMAT.format(time);</span>
     }
 
     private static LocalDateTime parseTime(String value) {
         try {
-<span class="fc" id="L166">            return LocalDateTime.parse(value, TIME_FORMAT);</span>
-<span class="fc" id="L167">        } catch (DateTimeParseException ex) {</span>
-<span class="fc" id="L168">            throw new InvalidRecordException(&quot;Invalid date/time: &quot; + value);</span>
+<span class="fc" id="L172">            return LocalDateTime.parse(value, TIME_FORMAT);</span>
+<span class="fc" id="L173">        } catch (DateTimeParseException ex) {</span>
+<span class="fc" id="L174">            throw new InvalidRecordException(&quot;Invalid date/time: &quot; + value);</span>
         }
     }
 
     private static String encode(String value) {
-<span class="fc" id="L173">        return Base64.getEncoder().encodeToString(</span>
-<span class="fc" id="L174">                value.getBytes(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L179">        return Base64.getEncoder().encodeToString(</span>
+<span class="fc" id="L180">                value.getBytes(StandardCharsets.UTF_8));</span>
     }
 
     private static String decode(String value) {
         try {
-<span class="fc" id="L179">            return new String(Base64.getDecoder().decode(value),</span>
+<span class="fc" id="L185">            return new String(Base64.getDecoder().decode(value),</span>
                     StandardCharsets.UTF_8);
-<span class="nc" id="L181">        } catch (IllegalArgumentException ex) {</span>
-<span class="nc" id="L182">            throw new InvalidRecordException(&quot;Invalid base64 value&quot;);</span>
+<span class="nc" id="L187">        } catch (IllegalArgumentException ex) {</span>
+<span class="nc" id="L188">            throw new InvalidRecordException(&quot;Invalid base64 value&quot;);</span>
         }
     }
 }

@@ -40,6 +40,11 @@ public final class PersistenceTest {
         check(task.toDetailString().contains("Report"), "task description");
         check(event.toDetailString().contains("Meeting"), "event description");
         check(contact.toDetailString().contains("+852 1234 5678"), "contact mobile");
+        check(task.toDetailString().contains(T2.toString()), "task deadline printed");
+        check(event.toDetailString().contains(event.getId()) && event.toDetailString().contains("[EVENT]")
+                && event.toDetailString().contains(T1.toString()) && event.toDetailString().contains(T2.toString()), "event fields printed");
+        check(contact.toDetailString().contains(contact.getId()) && contact.toDetailString().contains("[CONTACT]")
+                && contact.toDetailString().contains("Ada") && contact.toDetailString().contains("Hong Kong"), "contact fields printed");
         passed++;
     }
 
@@ -96,6 +101,9 @@ public final class PersistenceTest {
                 && ((Contact) records.get(3)).getName().equals("Ada"), "contact restored");
         check(records.get(0).getType() == RecordType.NOTE
                 && records.get(3).getType() == RecordType.CONTACT, "types restored");
+        for (int i = 0; i < records.size(); i++) {
+            check(records.get(i).toDetailString().equals(model.listRecords().get(i).toDetailString()), "all fields and IDs restored");
+        }
         passed++;
     }
 
@@ -103,7 +111,7 @@ public final class PersistenceTest {
     private static void testSaveLoadSpecialCharacters() throws Exception {
         PIMModel model = new PIMModel();
         model.createNote("line1\nline2 = with = and & symbols");
-        model.createTask("Chinese task & report", T2);
+        model.createTask("\u4e2d\u6587 task & report", T2);
         Path file = tempPim("special.pim");
 
         PIMFileCodec.save(model, file);
@@ -113,7 +121,7 @@ public final class PersistenceTest {
         check(records.size() == 2, "two records restored");
         check(((Note) records.get(0)).getText().equals("line1\nline2 = with = and & symbols"),
                 "newlines and symbols intact");
-        check(((Task) records.get(1)).getDescription().equals("Chinese task & report"),
+        check(((Task) records.get(1)).getDescription().equals("\u4e2d\u6587 task & report"),
                 "unicode intact");
         passed++;
     }
@@ -140,6 +148,9 @@ public final class PersistenceTest {
         Files.write(unknown, Arrays.asList("type=DIARY", "id=x", "text=QQ=="));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(unknown));
 
+        Path repeated = tempPim("repeated.pim");
+        Files.write(repeated, Arrays.asList("type=NOTE", "id=x", "text=QQ==", "text=Qg=="));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(repeated));
         Path missing = tempPim("missing.pim");
         Files.write(missing, Arrays.asList("type=TASK", "id=x"));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(missing));

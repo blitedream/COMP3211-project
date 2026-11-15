@@ -1,0 +1,27 @@
+SPEAKER A | 00:00–01:08 | Slides 1–2
+
+Hello everyone. Our project is a command-line personal information manager. It brings notes, tasks, events and contacts into one collection. A user can create information, find it later, update it, and save it for another session. I will begin with the creation requirement.
+For a task, the system must retain a description and a valid deadline, and return a unique identifier. The command shown creates a task called Finish report. The generated identifier allows us to retrieve exactly that record later. We can verify this requirement by checking the stored description, deadline and ID. We also check invalid inputs, such as a blank description or an impossible date. In those cases, the system must report an error and leave the collection unchanged. These observable outcomes make the requirement testable. B will now explain how users find the records they need.
+
+第 1 页先说用途与四类记录。第 2 页指向命令，再解释可验证的输入、输出和失败结果。UUID 不需要逐字读出。
+
+SPEAKER B | 01:08–02:16 | Slides 3–4
+
+A search criterion describes which records should match. Our system supports three kinds of comparisons. Users can select a record type, check whether a text field contains a string, or compare a time field with a given time. They can combine conditions using AND, OR and NOT. Parentheses make the intended grouping explicit.
+The search requirement is to return matching records without changing the stored collection. Here, we search for tasks whose descriptions contain report. The model evaluates the expression and the CLI displays matching IDs and details. A user can then copy an ID and update only its deadline. The CLI preserves the description and passes the complete replacement values to the model. The record keeps its ID and type. If there are no matches, the system reports zero records. A malformed expression instead produces a clear error. C will explain how the components support this behavior.
+
+第 3 页解释三类比较和逻辑组合，不需要读完所有语法。第 4 页按搜索、显示 ID、修改、打印的顺序讲，区分零结果与语法错误。
+
+SPEAKER C | 02:16–03:24 | Slides 5–6
+
+Our design separates terminal interaction from domain behavior. PIMCli acts as the view and controller. It reads commands, handles expected errors and displays results. PIMModel manages the record collection and typed updates. It delegates searching to PIRSearch. For file operations, the CLI calls PIMFileCodec to save or reconstruct a model. This separation lets us test domain behavior without starting the terminal interface.
+The class structure uses an abstract PIR base class with a stable identifier and common operations. Note, Task, Event and Contact extend it with their own fields. The records are immutable. To update one, the model first constructs and validates a replacement, and stores it only after validation succeeds. A linked map preserves insertion order. Search reads records through their getters, while persistence reconstructs the same types and identifiers. These shared interfaces allow the four modules to work together. D will finish with integration and testing.
+
+第 5 页跟随箭头讲调用关系，强调保存由 CLI 调用 Codec。第 6 页指向父类、四个子类和不可变记录。不要把 MVC 说成三个独立 Java 包。
+
+SPEAKER D | 03:24–04:32 | Slides 7–8
+
+Integration connects these components into a complete user workflow. We create records, save them, restart the application and load the file. We then check that identifiers, record types, field values and insertion order survive. Error handling also matters. A failed load must preserve the current collection, so the CLI replaces its model only after decoding succeeds. Invalid commands should leave the command loop usable.
+Our twenty-two model test groups passed, together with additional CLI integration checks. The model unit tests achieved ninety-six point one one percent line coverage, or three hundred and ninety-five of four hundred and eleven lines. This measurement excludes the CLI checks. The main lesson is that a coverage number needs meaningful assertions. We strengthened the tests to compare every persisted field and verify what remains after a failed operation. This gives us clearer evidence that the system meets its requirements. Thank you.
+
+你负责 D。第 7 页讲完整保存恢复流程与失败后保留数据。第 8 页说明 22 是测试组数，96.11% 是模型行覆盖率。结尾说测试经验，避免声称百分之百无 bug。
