@@ -1,12 +1,21 @@
-Current integration status
+Current integration status (15 November 2026)
 
-Model tests and CLI integration checks pass.
-Latest slides and speaker scripts are in presentation_v2.
+Blank/whitespace-only IDs are rejected for print/update/delete at all collection sizes.
+Core (6), search (7), persistence (9) test groups and CLI checks pass.
+Model unit-test line coverage is 395/411 (96.11%); CLI checks are excluded.
 
-Document review follow-ups
-- Align the SRS structure with Lecture 04, including preface, glossary, user requirements and architecture.
-- List every FR explicitly in the requirements coverage table.
-- Complete design API descriptions and improve pagination.
-- Include the complete search reference in the user manual.
+Updated formal submission documents
+- Requirements_Coverage.pdf lists every US, FR and NFR with implementation/test evidence.
+- docs/final/02_Design.pdf includes architecture, component relationships, record inheritance,
+  search/update sequence, state and all explicitly declared public/protected application APIs.
+- docs/final/03_User_Manual.pdf includes the complete search syntax and field reference;
+  it does not require B_search_design.md in the submission ZIP.
+- Rebuild PDFs with tools/build_submission_docs.py; tools/document_details.py holds
+  the consolidated design/coverage content. Regenerate coverage first.
 
-The group must record the two required videos and complete the official Honour Declaration with agreed contributions and accurate AI disclosure.
+Remaining group tasks
+- Review the SRS preface/version history against Lecture 04.
+- Record both required MP4 videos and complete the official Honour Declaration with
+  agreed contributions and accurate AI disclosure, including this repair/document work.
+- Confirm the final presentation PDF agrees with the actual recording.
+- Run make_submission.ps1 only after the required declaration and recordings exist.

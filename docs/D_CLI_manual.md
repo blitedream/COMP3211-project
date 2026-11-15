@@ -36,7 +36,81 @@ delete ID
 ```
 Updates accept one or more field/value pairs and preserve unspecified fields, ID and type. Allowed fields: note: text; task: description, deadline; event: description, start, alarm; contact: name, address, mobile. Duplicate or inappropriate fields are rejected. Required text cannot be blank.
 
-Search passes the expression unchanged to B's parser. See B_search_design.md for the complete grammar: type equality, case-insensitive text contains, time comparisons < > =, parentheses, &&, ||, !. Search quoted values cannot contain double quotes. Results show a count and details; zero results is normal. Print displays all stored fields. Event alarms are stored data, not background notifications.
+Print displays the ID, type and every stored field. Results start with the count; zero results is normal. Event alarms are stored data, not background notifications.
+
+IDs must be nonblank. Both an empty ID (two quotes) and an ID containing only whitespace are rejected by print, update and delete, even when only one record exists. A nonempty prefix that matches several records is rejected; enter more characters or the full ID.
+
+### Complete search reference
+
+Keywords, field names, and type names are case-insensitive. Text matching is
+also case-insensitive. A criteria string is a sequence of tokens separated by
+whitespace. Text values and date/time values are double-quoted and may contain
+spaces. A quoted value cannot contain a double quote. `!` may sit against the
+next token (`!type`) or stand alone (`! type`).
+
+```text
+expression = or
+or         = and { "||" and }
+and        = not { "&&" not }
+not        = "!" not | primary
+primary    = "(" expression ")" | comparison
+comparison = "type" "=" typeName
+           | textField "contains" quoted
+           | timeField ( "<" | ">" | "=" ) quoted
+typeName   = "note" | "task" | "event" | "contact"
+textField  = "text" | "description" | "name" | "address" | "mobile"
+timeField  = "deadline" | "start" | "alarm"
+quoted     = '"' characters '"'
+```
+
+`!` binds tighter than `&&`, and `&&` binds tighter than `||`. Parentheses
+override that order. For example, `type = task || type = event && description
+contains "report"` means `type = task || (type = event && description contains
+"report")`.
+
+Date/time values use exactly `yyyy-MM-dd HH:mm` inside quotes. `LocalDateTime`
+has no timezone. This is the format the CLI and search module both use.
+
+### Search examples
+
+```text
+type = task
+text contains "milk"
+deadline < "2026-10-02 09:00"
+type = event && start > "2026-10-01 00:00"
+(type = task || type = event) && description contains "report"
+! type = note
+```
+
+## Field mapping
+
+| Criterion name | Record types |
+|---|---|
+| `type` | all |
+| `text` | Note |
+| `description` | Task, Event |
+| `name` | Contact |
+| `address` | Contact |
+| `mobile` | Contact |
+| `deadline` | Task |
+| `start` | Event |
+| `alarm` | Event |
+
+`contains` is true when the field value contains the quoted text, ignoring
+case. `<`, `>`, and `=` compare `LocalDateTime` values. A comparison against a
+field that the record does not have is false for that record. It is not an
+error. `deadline < "2026-10-02 09:00"` therefore selects only tasks before that
+instant.
+
+
+### Search errors and output
+Use `search CRITERIA` at the prompt; the grammar above describes CRITERIA. Examples above omit the leading search command. Put spaces around comparison and binary logical operators; parentheses and ! may touch adjacent tokens. Search quoted values cannot contain double quotes (the doubled-quote rule for create/update does not apply to search). Empty quoted search values, invalid dates, unknown fields/types, missing operands and unclosed parentheses print Error: and preserve all records. An otherwise valid criterion with no matches prints 0 record(s). Each match shows the complete record ID, type and fields, in insertion order, once per record.
+
+```text
+search type = contact && address contains "Hong Kong"
+search deadline < "2026-11-20 20:00"
+search !(type = note || type = contact)
+```
 
 Save overwrites the named .pim file. Load replaces the entire current collection only after a successful read. Save first if current changes are needed. Relative paths resolve from the directory where you launched the program. Quit, exit and end-of-input do not automatically save. Invalid commands, arguments, dates, IDs and files print `Error:` and allow the next command; failed updates and failed loads preserve current data.
 

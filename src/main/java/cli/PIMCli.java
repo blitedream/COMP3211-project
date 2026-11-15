@@ -135,6 +135,9 @@ public final class PIMCli {
      * An ambiguous prefix is reported with the number of matching records.
      */
     private String resolveId(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("ID must be nonblank");
+        }
         String needle = id.toLowerCase(Locale.ROOT);
         List<String> matches = new ArrayList<String>();
         for (PIR record : model.listRecords()) {
