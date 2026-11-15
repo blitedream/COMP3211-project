@@ -11,6 +11,8 @@ styles=getSampleStyleSheet()
 styles['Normal'].fontSize=10; styles['Normal'].leading=14
 styles.add(ParagraphStyle(name='CodeSmall',fontName='Courier',fontSize=8,leading=11))
 for n in ['Title','Heading1','Heading2']: styles[n].textColor=colors.black
+# Avoid a section heading stranded at the bottom of a page with its table on the next page.
+styles['Heading1'].keepWithNext=1; styles['Heading2'].keepWithNext=1
 def p(t,style='Normal'): return Paragraph(html.escape(t).replace('\n','<br/>'),styles[style])
 def table(rows,widths=None):
  t=Table([[p(str(c)) for c in row] for row in rows],colWidths=widths,repeatRows=1,hAlign='LEFT')
@@ -67,7 +69,14 @@ def diagram(kind):
  return d
 
 # Preserve the source DOCX and export the requirements into the formal PDF.
-z=zipfile.ZipFile(R/'docs/PIM_SRS_Draft.docx');root=ET.fromstring(z.read('word/document.xml'));ns={'w':'http://schemas.openxmlformats.org/wordprocessingml/2006/main'};items=[]
+z=zipfile.ZipFile(R/'docs/PIM_SRS_Draft.docx');root=ET.fromstring(z.read('word/document.xml'));ns={'w':'http://schemas.openxmlformats.org/wordprocessingml/2006/main'};# Column widths per table, chosen from the header text so that narrow ID
+# columns stay narrow while command and component names get room to breathe.
+def table_widths(header):
+ first=str(header[0]).strip().lower()
+ if len(header)==2:
+  return {'id':[60,451],'command and syntax':[150,361],'pir type':[120,391],'component':[140,371]}.get(first,[120,391])
+ return {'requirements':[85,80,346],'requirement':[85,80,346]}.get(first,[60,70,381])
+items=[]
 for el in root.find('w:body',ns):
  if el.tag.endswith('}p'):
   text=''.join(t.text or '' for t in el.findall('.//w:t',ns))
@@ -77,8 +86,7 @@ for el in root.find('w:body',ns):
   items.append(p(text,'Heading1' if re.match(r'^\d+ ',text) else 'Heading2' if re.match(r'^\d+\.\d+',text) else 'Normal'));items.append(Spacer(1,7))
  elif el.tag.endswith('}tbl'):
   rows=[[''.join(t.text or '' for t in c.findall('.//w:t',ns)).replace('. pim','.pim') for c in row.findall('w:tc',ns)] for row in el.findall('w:tr',ns)]
-  items.append(table(rows,{2:[90,421],3:[55,60,396]}.get(len(rows[0]))));items.append(Spacer(1,10))
-items+=section('5 Command contract','The CLI user manual fixes the supported commands, quoting rules, date syntax and replacement semantics. Search follows the B grammar: ! binds before &&, which binds before ||. Parentheses override precedence. Duplicate keys in a record block are invalid and cause loading to fail.')
+  items.append(table(rows,table_widths(rows[0])));items.append(Spacer(1,10))
 build(OUT/'01_SRS.pdf','PIM Software Requirements Specification',items)
 items=section('1 Architecture','The system uses an MVC-inspired separation. PIMCli combines terminal view and controller in one adapter. The model package owns validation, records, searching and persistence and can run without terminal input. This separates interaction from domain tests. The view is not a separate class; this is a deliberate small-system tradeoff.')+[diagram('architecture')]
 items+=section('2 Record structure','PIR is an immutable abstract base class. Four concrete types retain their fields and stable ID. PIMModel owns a LinkedHashMap, preserves insertion order and returns immutable list snapshots. Updates validate a replacement before storing it.')+[diagram('classes')]
@@ -96,9 +104,9 @@ build(OUT/'04_Developer_Manual.pdf','PIM Developer Manual',md(manual.split('## D
 rows=[['Requirement','Implemented behavior','Verification']]
 data=[('Four types and stable IDs','ModelCoreTest'),('Notes','ModelCoreTest; CliTest'),('Tasks and deadlines','ModelCoreTest; CliTest'),('Events and alarm fields','ModelCoreTest; CliTest'),('Contacts','ModelCoreTest; CliTest'),('Modify with stable ID and type','ModelCoreTest; CliTest'),('Field and boolean search','SearchTest; CliTest'),('Print one or all','PersistenceTest; CliTest'),('Delete by ID','PersistenceTest; CliTest'),('Save .pim files','PersistenceTest'),('Load .pim files','PersistenceTest; CliTest')]
 for i,(label,test) in enumerate(data,1):rows.append([f'US{i}',label,test])
-items=[p('All eleven user stories are implemented. The following executable checks provide evidence for tested scenarios, not proof of absence of defects.'),Spacer(1,10),table(rows,[60,245,206])]
+items=[p('All eleven user stories are implemented. The following executable checks provide evidence for tested scenarios, not proof of absence of defects.'),Spacer(1,10),table(rows,[85,220,206])]
 items+=section('SRS traceability','FR-01 through FR-06 map to US1 through US6. FR-07 and FR-08 map to US7. FR-09, FR-10, FR-11 and FR-12 map to US8, US9, US10 and US11 respectively. All are implemented. Invalid updates and failed loads preserve stored records.')
-items+=[table([['Requirement','Status and evidence'],['NFR-01','Standard-library application verified on JDK 21 and executed on a Java 8 runtime; CLI and tests pass on both.'],['NFR-02','Domain code is isolated in model and tested without CLI.'],['NFR-03','Expected input and file failures show readable errors; recovery checks pass.'],['NFR-04','Automatic model tests and current line coverage report supplied.']],[100,411])]
+items+=[table([['Requirement','Status and evidence'],['NFR-01','Standard-library application verified on JDK 21 and executed on a Java 8 runtime; CLI and tests pass on both.'],['NFR-02','Domain code is isolated in model and tested without CLI.'],['NFR-03','Expected input and file failures show readable errors; recovery checks pass.'],['NFR-04','Automatic model tests and current line coverage report supplied.']],[120,391])]
 build(R/'Requirements_Coverage.pdf','PIM Requirements Coverage',items)
 xml=ET.parse(R/'build/coverage.xml').getroot();counts={c.attrib['type']:(int(c.attrib['missed']),int(c.attrib['covered'])) for c in xml.findall('counter')};m,c=counts['LINE'];pct=100*c/(c+m)
 rows=[['Measure','Covered','Total','Coverage']]+[[k,str(c),str(c+m),f'{100*c/(c+m):.2f}%'] for k,(m,c) in counts.items() if k in ['LINE','BRANCH','INSTRUCTION','METHOD','CLASS']]
