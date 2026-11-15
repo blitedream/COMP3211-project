@@ -13,7 +13,9 @@ tools/build_submission_docs.py.
 from pathlib import Path
 
 from docx import Document
-from docx.shared import Pt
+from docx.shared import Pt, Inches, RGBColor
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "PIM_SRS_Draft.docx"
@@ -74,12 +76,32 @@ COMMANDS = [
 def add_table(doc, rows, widths=None):
     table = doc.add_table(rows=0, cols=len(rows[0]))
     table.style = "Table Grid"
+    header = rows[0][0]
+    widths = widths or {
+        "Version and date": [1.1, 0.7, 4.7],
+        "ID": [0.7, 5.8] if len(rows[0]) == 2 else [0.7, 0.7, 5.1],
+        "PIR type": [1.3, 5.2],
+        "Component": [1.6, 4.9],
+        "Command and syntax": [2.0, 4.5],
+        "Requirements": [1.3, 1.0, 4.2],
+    }.get(header)
+    if widths:
+        table.autofit = False
+        for column, width in zip(table.columns, widths): column.width = Inches(width)
     for index, row in enumerate(rows):
         cells = table.add_row().cells
+        if index == 0:
+            repeat = OxmlElement("w:tblHeader")
+            table.rows[-1]._tr.get_or_add_trPr().append(repeat)
+        cant_split = OxmlElement("w:cantSplit")
+        table.rows[-1]._tr.get_or_add_trPr().append(cant_split)
+        if widths:
+            for cell, width in zip(cells, widths): cell.width = Inches(width)
         for cell, value in zip(cells, row):
             cell.text = value
             if index == 0:
                 for paragraph in cell.paragraphs:
+                    paragraph.paragraph_format.keep_with_next = True
                     for run in paragraph.runs:
                         run.bold = True
     doc.add_paragraph()
@@ -89,6 +111,14 @@ def add_table(doc, rows, widths=None):
 def main():
     doc = Document()
     doc.styles["Normal"].font.size = Pt(10)
+    for name in ["Title", "Subtitle", "Heading 1", "Heading 2"]:
+        doc.styles[name].font.color.rgb = RGBColor(0, 0, 0)
+    for style in doc.styles:
+        for border in list(style.element.iter(qn("w:pBdr"))):
+            border.getparent().remove(border)
+    doc.core_properties.title = "PIM Software Requirements Specification"
+    doc.core_properties.version = "1.0"
+    doc.core_properties.comments = "Version history and blank-ID rules synchronized on 15 November 2026."
 
     doc.add_paragraph("Personal Information Management System", style="Title")
     doc.add_paragraph("Software Requirements Specification", style="Subtitle")
@@ -107,12 +137,38 @@ def main():
         for item in items:
             doc.add_paragraph("\u2022 " + item)
 
-    para("This document specifies the requirements for the command-line personal information "
-         "management (PIM) system built for the COMP3211 group project. It is written for the "
-         "course instructor, who evaluates the requirements, and for the development team, who "
-         "implement and test them. The document follows the structure introduced in Lecture 04 "
-         "and omits the chapters that the project description excludes: system models, system "
-         "evolution, appendices and index.")
+    h1("Preface")
+    h2("Intended readers")
+    para("This specification defines the required behavior of the COMP3211 command-line Personal "
+         "Information Management system. The instructor and markers assess its scope and quality; "
+         "developers implement its interfaces and validation rules; test authors derive expected "
+         "outcomes from its numbered requirements. End users should use the User Manual.")
+    h2("Document version and scope")
+    para("Version 1.0, revised 15 November 2026. Covers US1-US11, FR-01-FR-12 and NFR-01-NFR-04. "
+         "Follows Lecture 04; omits System models, System evolution, Appendices and Index as "
+         "permitted by the project description. A document version does not certify test completeness.")
+    h2("Version history")
+    para("Earlier rows identify Git snapshots by commit date. Version labels are assigned here "
+         "for traceability; they do not imply that earlier files carried these labels or had formal approval.")
+    add_table(doc, [
+        ("Version and date", "Source", "Changes and reason"),
+        ("0.1\n26 Sep 2026", "e8d9940", "Initial committed SRS snapshot with the record core. Establishes the earliest requirements baseline."),
+        ("0.2\n29 Oct 2026", "b033c9e", "SRS snapshot included with the persistence upload. Records an intermediate baseline before consolidation."),
+        ("0.3\n15 Nov 2026", "6bf0f7f", "Adds Lecture 04 structure, glossary, user requirements, architecture, commands and ID-prefix rules. Makes interaction and verification expectations explicit."),
+        ("1.0\n15 Nov 2026", "This revision", "Adds Preface, readership, history and change rationale; clarifies blank-ID rejection. Aligns the specification with the CLI fix while preserving requirement identifiers."),
+    ])
+    h2("Changes in version 1 0")
+    para("The Preface completes Lecture 04 document-control information. Sections 5.2 and 5.3 now "
+         "require print, update and delete to reject empty or whitespace-only IDs without changing "
+         "records, even in a one-record collection. This matches CLI fix 8f06151 and its regression "
+         "checks, clarifying FR-06, FR-09, FR-10 and NFR-03 without adding a user story or identifier.")
+    h2("Related documents and maintenance")
+    para("The Design Document explains architecture and APIs; the User Manual explains commands "
+         "and search. Requirements_Coverage.pdf maps requirements to evidence; Model_Line_Coverage.pdf "
+         "reports model coverage. Maintain docs/PIM_SRS_Draft.docx and docs/final/01_SRS.pdf together. "
+         "For future revisions, retain unchanged requirement identifiers and add a dated history entry "
+         "explaining the reason and impact on requirements, manuals and tests.")
+    doc.add_page_break()
 
     h1("1 Introduction")
     h2("1.1 Purpose and scope")
@@ -207,7 +263,7 @@ def main():
     para("Commands are entered one per line at the pim> prompt. Command words, type names and "
          "field names are case insensitive. Arguments that contain spaces are enclosed in double "
          "quotes; two double quotes inside a quoted argument represent one literal quote. An ID "
-         "may be given in full or as any unique prefix; an ambiguous prefix is rejected. Date "
+         "may be given in full or as any unique nonblank prefix; an empty, whitespace-only or ambiguous prefix is rejected. Date "
          "and time values use exactly yyyy-MM-dd HH:mm and are interpreted as local time. An "
          "unknown command, a wrong number of arguments, an invalid field or an invalid value "
          "prints an error and leaves the collection unchanged.")
@@ -217,6 +273,7 @@ def main():
     bullets([
         "Required text fields reject empty or whitespace-only values.",
         "Date and time values use yyyy-MM-dd HH:mm; an invalid calendar date such as 30 February is rejected.",
+        "For print, update and delete, an empty or whitespace-only ID is rejected without changing the collection, even if only one record exists.",
         "An unknown ID produces an explicit error. No record is silently created by update, print or delete.",
         "An ambiguous ID prefix produces an error that reports how many records match.",
         "A .pim file stores one record per block, with a blank line between blocks and one key=value pair per line.",
@@ -244,6 +301,26 @@ def main():
         ("NFR-01 to NFR-04", "Whole system", "run_d_tests.ps1, run_coverage.ps1, coverage report"),
     ])
 
+    # Keep the Preface together on a readable first page.
+    for sec in doc.sections:
+        sec.left_margin = Inches(1)
+        sec.right_margin = Inches(1)
+    in_preface = False
+    for para_item in doc.paragraphs:
+        if para_item.text == "Preface": in_preface = True
+        if para_item.text == "1 Introduction": in_preface = False
+        if in_preface:
+            para_item.paragraph_format.space_before = Pt(5 if para_item.style.name.startswith("Heading") else 0)
+            para_item.paragraph_format.space_after = Pt(4)
+            if not para_item.style.name.startswith("Heading"):
+                para_item.paragraph_format.line_spacing = 1.0
+                for run in para_item.runs: run.font.size = Pt(9.5)
+    for row in doc.tables[0].rows:
+        for cell in row.cells:
+            for para_item in cell.paragraphs:
+                para_item.paragraph_format.space_after = Pt(2)
+                para_item.paragraph_format.line_spacing = 1.0
+                for run in para_item.runs: run.font.size = Pt(9)
     doc.save(OUT)
     print("Wrote", OUT)
 

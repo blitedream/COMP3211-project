@@ -5,6 +5,8 @@ Core (6), search (7), persistence (9) test groups and CLI checks pass.
 Model unit-test line coverage is 395/411 (96.11%); CLI checks are excluded.
 
 Updated formal submission documents
+- SRS Word/PDF version 1.0 includes the Preface, readership, dated Git-based history,
+  change rationale and explicit blank-ID behavior; both are synchronized.
 - Requirements_Coverage.pdf lists every US, FR and NFR with implementation/test evidence.
 - docs/final/02_Design.pdf includes architecture, component relationships, record inheritance,
   search/update sequence, state and all explicitly declared public/protected application APIs.
@@ -14,7 +16,6 @@ Updated formal submission documents
   the consolidated design/coverage content. Regenerate coverage first.
 
 Remaining group tasks
-- Review the SRS preface/version history against Lecture 04.
 - Record both required MP4 videos and complete the official Honour Declaration with
   agreed contributions and accurate AI disclosure, including this repair/document work.
 - Confirm the final presentation PDF agrees with the actual recording.

@@ -1,6 +1,6 @@
 from pathlib import Path
 import re, xml.etree.ElementTree as ET, zipfile, html
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Preformatted
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Preformatted, KeepInFrame
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -76,21 +76,36 @@ def diagram(kind):
 # Preserve the source DOCX and export the requirements into the formal PDF.
 z=zipfile.ZipFile(R/'docs/PIM_SRS_Draft.docx');root=ET.fromstring(z.read('word/document.xml'));ns={'w':'http://schemas.openxmlformats.org/wordprocessingml/2006/main'};# Column widths per table, chosen from the header text so that narrow ID
 # columns stay narrow while command and component names get room to breathe.
+def word_cell_text(cell):
+ parts=[]
+ for node in cell.iter():
+  if node.tag=='{'+ns['w']+'}t': parts.append(node.text or '')
+  elif node.tag=='{'+ns['w']+'}br': parts.append('\n')
+ return ''.join(parts)
+
 def table_widths(header):
  first=str(header[0]).strip().lower()
  if len(header)==2:
   return {'id':[60,451],'command and syntax':[150,361],'pir type':[120,391],'component':[140,371]}.get(first,[120,391])
- return {'requirements':[85,80,346],'requirement':[85,80,346]}.get(first,[60,70,381])
+ return {'version and date':[80,65,366],'requirements':[85,80,346],'requirement':[85,80,346]}.get(first,[60,70,381])
 items=[]
 for el in root.find('w:body',ns):
  if el.tag.endswith('}p'):
   text=''.join(t.text or '' for t in el.findall('.//w:t',ns))
-  if not text or text.startswith(('Personal Information Management System','Software Requirements Specification')):continue
-  if text.startswith('This specification'):text='This specification defines the required behavior of the COMP3211 command-line PIM. It covers all eleven user stories and the integrated A, B, C and D modules.'
+  if not text:
+   if el.find('.//w:br[@w:type="page"]',ns) is not None:
+    items=[KeepInFrame(511,700,items,mode='shrink'),PageBreak()]
+   continue
+  if text.startswith(('Personal Information Management System','Software Requirements Specification')):continue
   text=text.replace('Search, file, and CLI owners should add tests','Search, file, and CLI tests provide verification')
-  items.append(p(text,'Heading1' if re.match(r'^\d+ ',text) else 'Heading2' if re.match(r'^\d+\.\d+',text) else 'Normal'));items.append(Spacer(1,7))
+  style_node=el.find('w:pPr/w:pStyle',ns)
+  word_style=style_node.get('{'+ns['w']+'}val','') if style_node is not None else ''
+  pdf_style='Heading1' if word_style=='Heading1' or re.match(r'^\d+ ',text) else 'Heading2' if word_style=='Heading2' or re.match(r'^\d+\.\d+',text) else 'Normal'
+  items.append(p(text,pdf_style))
+  gap=Spacer(1,7);gap.keepWithNext=pdf_style.startswith('Heading')
+  items.append(gap)
  elif el.tag.endswith('}tbl'):
-  rows=[[''.join(t.text or '' for t in c.findall('.//w:t',ns)).replace('. pim','.pim') for c in row.findall('w:tc',ns)] for row in el.findall('w:tr',ns)]
+  rows=[[word_cell_text(c).replace('. pim','.pim') for c in row.findall('w:tc',ns)] for row in el.findall('w:tr',ns)]
   items.append(table(rows,table_widths(rows[0])));items.append(Spacer(1,10))
 build(OUT/'01_SRS.pdf','PIM Software Requirements Specification',items)
 from document_details import design, coverage
