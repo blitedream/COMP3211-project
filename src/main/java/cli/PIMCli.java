@@ -45,9 +45,15 @@ public final class PIMCli {
                 case "print":
                     count(a, 2);
                     if (a.get(1).equalsIgnoreCase("all")) show(model.listRecords());
-                    else out.println(model.getRecord(a.get(1)).toDetailString());
+                    else out.println(model.getRecord(resolveId(a.get(1))).toDetailString());
                     break;
-                case "delete": count(a, 2); model.deleteRecord(a.get(1)); out.println("Deleted " + a.get(1)); break;
+                case "delete": {
+                    count(a, 2);
+                    String id = resolveId(a.get(1));
+                    model.deleteRecord(id);
+                    out.println("Deleted " + id);
+                    break;
+                }
                 case "save": count(a, 2); PIMFileCodec.save(model, file(a.get(1))); out.println("Saved."); break;
                 case "load": count(a, 2); PIMModel loaded = PIMFileCodec.load(file(a.get(1))); model = loaded; out.println("Loaded " + model.listRecords().size() + " record(s); replaced current collection."); break;
                 default: throw new IllegalArgumentException("Unknown command. Type help.");
@@ -62,8 +68,14 @@ public final class PIMCli {
         return Paths.get(name);
     }
     private static LocalDateTime time(String value) {
-        if (!value.matches("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}")) throw new IllegalArgumentException("Time must be yyyy-MM-dd HH:mm");
-        return LocalDateTime.parse(value, TIME);
+        if (!value.matches("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}")) {
+            throw new IllegalArgumentException("Invalid date/time '" + value + "': expected yyyy-MM-dd HH:mm");
+        }
+        try {
+            return LocalDateTime.parse(value, TIME);
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException("Invalid date/time '" + value + "': date does not exist");
+        }
     }
     private void create(List<String> a) {
         if (a.size() < 2) throw new IllegalArgumentException("Usage: create TYPE fields...");
@@ -80,7 +92,8 @@ public final class PIMCli {
     /** Partial update preserves other fields, stable ID and type. */
     private void update(List<String> a) {
         if (a.size()<4 || a.size()%2!=0) throw new IllegalArgumentException("Usage: update ID field value [field value ...]");
-        PIR r=model.getRecord(a.get(1));
+        String id = resolveId(a.get(1));
+        PIR r=model.getRecord(id);
         Map<String,String> f=new LinkedHashMap<String,String>();
         for(int i=2;i<a.size();i+=2) {
             String key=a.get(i).toLowerCase(Locale.ROOT);
@@ -117,9 +130,27 @@ public final class PIMCli {
         out.println(records.size()+" record(s)");
         for(PIR r:records) out.println(r.toDetailString());
     }
+    /**
+     * Accept a full ID or any unique prefix and return the canonical full ID.
+     * An ambiguous prefix is reported with the number of matching records.
+     */
+    private String resolveId(String id) {
+        String needle = id.toLowerCase(Locale.ROOT);
+        List<String> matches = new ArrayList<String>();
+        for (PIR record : model.listRecords()) {
+            String candidate = record.getId().toLowerCase(Locale.ROOT);
+            if (candidate.equals(needle)) return record.getId();
+            if (candidate.startsWith(needle)) matches.add(record.getId());
+        }
+        if (matches.size() == 1) return matches.get(0);
+        if (matches.isEmpty()) throw new RecordNotFoundException(id);
+        throw new IllegalArgumentException("Ambiguous ID prefix '" + id + "': "
+                + matches.size() + " records match; type more characters");
+    }
     private void help() {
         out.println("create note TEXT\ncreate task DESCRIPTION DEADLINE\ncreate event DESCRIPTION START ALARM\ncreate contact NAME ADDRESS MOBILE\nupdate ID FIELD VALUE [FIELD VALUE ...]\nsearch CRITERIA\nprint ID|all\ndelete ID\nsave FILE.pim\nload FILE.pim\nhelp\nquit");
         out.println("Quote values containing spaces. Time: yyyy-MM-dd HH:mm. Fields: text, description, deadline, start, alarm, name, address, mobile.");
+        out.println("ID may be the full 36-character ID or any unique prefix (8 characters usually suffice).");
         out.println("Search example: (type = task || type = event) && description contains \"report\"");
         out.println("Save overwrites its file. Load replaces all records only on success. Quit/EOF does not save automatically.");
     }

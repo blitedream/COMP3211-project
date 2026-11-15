@@ -35,6 +35,9 @@ public final class CliTest {
    cli.execute("create task bad \"2026-02-30 10:00\"");cli.execute("create note \"unclosed");cli.execute("delete missing");
    text.getBuffer().setLength(0);cli.execute("print all");check(text.toString().contains("4 record(s)")&&text.toString().contains("buy tea"),"failed operations preserve collection");
    text.getBuffer().setLength(0);cli.execute("save bad.txt");check(text.toString().contains("Error:"),"extension rejected");
+   text.getBuffer().setLength(0);cli.execute("print "+id.substring(0,8));check(text.toString().contains("buy tea"),"unique ID prefix resolves");
+   text.getBuffer().setLength(0);cli.execute("print \"\"");check(text.toString().contains("Ambiguous ID prefix"),"ambiguous ID prefix rejected");
+   text.getBuffer().setLength(0);cli.execute("create task bad2 \"2026-02-30 10:00\"");check(text.toString().contains("Invalid date/time"),"date error is readable");
    check(!cli.execute("quit"),"exit");
    cli.run(new BufferedReader(new StringReader("help\n")));
   } finally {Files.deleteIfExists(file);}
