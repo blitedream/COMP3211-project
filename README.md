@@ -9,7 +9,8 @@ The application uses only Java standard libraries.
 - Windows with PowerShell.
 - A JDK with `java` and `javac` available on PATH.
 - Verified with Eclipse Temurin JDK 21.0.3. Compilation targets Java 8;
-  the complete application has not been separately verified on a Java 8 runtime.
+  the CLI and the full test suite were also executed on a Java 8 runtime
+  (1.8.0_503).
 
 No Maven, Gradle or runtime dependency installation is needed. The JAR files in
 `lib/` are JaCoCo coverage tools, not application dependencies.
@@ -37,8 +38,8 @@ quit
 ```
 
 To restore those records in a later session, enter `load "my-records.pim"`.
-Creation prints a record ID; use that full ID for `print ID`, `delete ID`, or
-`update ID text "Revised note"` (the latter applies to notes).
+Creation prints a record ID. `print`, `delete` and `update` accept the full
+36-character ID or any unique prefix of it (8 characters usually suffice).
 
 Quote arguments containing spaces. Dates use `yyyy-MM-dd HH:mm`.
 Save overwrites the named file. A successful load replaces the current
@@ -94,3 +95,19 @@ Running the commands above does **not** regenerate coverage measurements.
 The module documents are working material. This README does not replace the
 course's required formal manuals, consolidated design document, requirements
 coverage report, coverage report, videos or presentation deliverables.
+
+## Build the submission archive
+
+1. Fill `Honour_Declaration_TEMPLATE.docx`, export it as PDF and save it as
+   `Honour_Declaration.pdf` in the repository root.
+2. Record `video/demo.mp4` (at most 4 minutes) and `video/presentation.mp4`
+   (at most 5 minutes).
+3. Run:
+
+```powershell
+.\make_submission.ps1
+```
+
+The script writes `build/COMP3211_submission_<timestamp>.zip` and verifies that
+`Honour_Declaration.pdf` sits at the archive root, as the course requires.
+

@@ -1,7 +1,7 @@
 # D: CLI and integration
 
 ## Developer guide
-Developed and tested on Windows with Temurin JDK 21.0.3; sources target Java 8.
+Developed and tested on Windows with Temurin JDK 21.0.3; sources target Java 8. The CLI and the full test suite also run on a Java 8 runtime (verified with 1.8.0_503).
 Only standard Java libraries are used. Open the project folder in an IDE with Java support (for example IntelliJ IDEA), mark src/main/java as sources and src/test/java as tests, and run or debug cli.PIMCli.main.
 From PowerShell in the repository root:
 
@@ -26,7 +26,7 @@ load "my records.pim"
 help
 quit
 ```
-Creation prints a unique ID. Copy the full ID to use the following commands (replace ID):
+Creation prints a unique ID. The commands below accept the full ID or any unique prefix of it (8 characters usually suffice):
 
 ```text
 print ID
