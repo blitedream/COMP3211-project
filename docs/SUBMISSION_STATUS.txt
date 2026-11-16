@@ -11,6 +11,14 @@ session mapping; stored IDs and existing .pim files remain compatible. Plain
 output is available. The updated preview package passed isolated launch and
 short-number save/load checks; the domain model source is unchanged.
 
+Recording materials now follow a verified fresh-session sequence: four record types,
+three searches, update by number 2, rejected invalid date, save/restart/load, and
+delete by number 1. Use video/Recording_Steps.txt or the four-page recording PDF.
+The eight-page Canva deck, its page notes, the speaker script and the exported
+05_Presentation.pdf use the same dates, short-number examples and current test
+environment. Template placeholders were removed; required authorship declarations
+and prior verification records remain. The packager copies only the two final MP4s.
+
 The group will record the demo; subtitles will be added to that original recording.
 The generated replay was not selected and is archived outside the submission folder.
 Remaining: recorded and subtitled demo.mp4, presentation.mp4 and official Honour

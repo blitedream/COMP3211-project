@@ -172,6 +172,9 @@ if not selected or '05_Presentation.pdf' in selected:
  if not (OUT/'05_Presentation.pdf').is_file():
   raise FileNotFoundError('Export the Canva deck to docs/final/05_Presentation.pdf first.')
  print('Preserved docs/final/05_Presentation.pdf (Canva export).')
-build(OUT/'06_Recording_Guide.pdf','PIM Recording and Submission Guide',section('System demonstration','Target 3 minutes 40 seconds: start (20 seconds); create four types (50); list and inspect a number (20); search and update (50); save, restart and load (45); invalid input and delete (35). Record the actual program as MP4. This guide is not the video.')+section('Presentation recording','Use the reviewed eight-slide deck: A pages 1-2, B pages 3-4, C pages 5-6, D pages 7-8. Target A/B at 70 seconds each and C/D at 75 seconds each (4 minutes 50 seconds including ID displays), leaving 10 seconds for transitions. Rehearsal targets are not measured durations. Each presenter must speak for at least one minute. All presenters show faces and student IDs at the beginning; the current presenter remains visible. A/B/C/D labels are speaking sections, not contribution percentages.')+section('Example demonstration','Create a task called Finish report, search type = task && description contains "report", use its number from list, and update only deadline. Print it to show the description remains. Save demo.pim, restart and load it. Try an unknown ID or invalid date, then print all to show recovery.')+section('Human completion','Review group facts, record the two MP4 videos, agree contributions and complete the official Honour Declaration with signatures and all required declarations completed. Add these materials before final submission. Confirm names, student IDs, signatures and contribution percentages before submission.'))
+if not selected or '06_Recording_Guide.pdf' in selected:
+ from recording_guide import build_recording_guide
+ build_recording_guide(R,OUT/'06_Recording_Guide.pdf')
+ generated.append('06_Recording_Guide.pdf')
 print(f'Generated {len(generated)} PDFs: {", ".join(generated)}. Model line coverage: {pct:.2f}%')
 

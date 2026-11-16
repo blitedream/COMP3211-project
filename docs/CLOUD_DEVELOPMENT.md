@@ -57,6 +57,9 @@ requested scope and preserve the CLI and Java standard-library constraints.
 - `docs/final/05_Presentation.pdf`: the single maintained eight-page Canva export.
   Save future Canva exports directly here; the PDF builder preserves this file.
 - `presentation/Speaker_Scripts.txt`: current speaker script.
+- `tools/recording_guide.py`: recording-guide commands, timings and speaker notes.
+  It generates the recording PDF, `video/Recording_Steps.txt` and the speaker
+  script. Keep the English paragraphs in Canva's page notes aligned with this source.
 - `docs/FINAL_ACCEPTANCE.txt`: prior quality audit, including its limitations.
 - `docs/SUBMISSION_STATUS.txt`: pending submission work.
 

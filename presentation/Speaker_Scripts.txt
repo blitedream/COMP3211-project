@@ -1,140 +1,50 @@
-# COMP3211 PIM · 逐页讲稿与提示
+COMP3211 PIM 讲稿
 
-排练目标 **4:50（290 秒）**：A/B 各约 70 秒，C/D 各约 75 秒（课程要求每人至少 1 分钟），留约 10 秒给停顿和切页；实际录制必须计时。
+排练目标 4:50。A/B 各约 70 秒，C/D 各约 75 秒。实际以录像计时为准。
+每位同学先介绍自己的真实姓名并出示学生证，再讲自己的两页。讲者人脸始终保留在画面内。
+A/B/C/D 是讲述段落，不代表贡献比例。无需把字母或提示语念出来。
+A：第 1–2 页，0:00–1:10；B：第 3–4 页，1:10–2:20；C：第 5–6 页，2:20–3:35；D：第 7–8 页，3:35–4:50。
 
-| 讲者 | 页码 | 时间 | 内容 |
-|---|---|---|---|
-| A | 1–2 | 0:00–1:10 | 开场、系统范围 |
-| B | 3–4 | 1:10–2:20 | 需求 1 创建、需求 2 搜索条件 |
-| C | 5–6 | 2:20–3:35 | 需求 3 搜索、总体架构 |
-| D | 7–8 | 3:35–4:50 | 记录模型、经验教训 |
+第 1 页 / A / 约 25 秒
+先介绍自己的真实姓名并出示学生证，再接下文。
 
-## 通用提示
+Our project is a personal information manager written in Java. It keeps notes, tasks, events and contacts in one collection. The user enters commands in a terminal and saves the collection to a .pim file. I will start with the record types and explain how we identify records.
 
-- 每人开头报名字并出示学生证，保持约 3 秒；讲者的人脸全程可见。
-- 录屏时看**摄像头**，不是看屏幕；语速约 140 词/分钟，比平时慢一点。
-- 在句子结束时切页，不要边说边切；切完停半秒再开口。
-- 数字（99.30%、56）放慢、咬清楚。
-- 每页只讲一个意思；讲不完的细节留给提问。
+第 2 页 / A / 约 45 秒
+说到四类记录时依次指对应字段。短编号与保存 ID 要分清。
 
----
+A note stores plain text. A task has a description and a deadline. An event has a description, a start time and an alarm time. A contact stores a name, an address and a mobile number. The stored ID stays the same when a record is updated or loaded. In the terminal, list also shows short numbers such as one and two. We can use those numbers without copying the long ID. They stay with their records during a session. After restarting, we check list again. Saving is explicit, so quit does not save changes automatically.
 
-## 第 1 页 · 标题（A，25 秒）
+第 3 页 / B / 约 35 秒
+先介绍自己的真实姓名并出示学生证。例子在 note #1 后创建 task #2。
 
-**English script**
+The first requirement is to create a record with all required fields. This example follows a note, so the new task receives number two. It stores Finish report and the deadline shown in the command. We can type print two to inspect it. The file still stores a stable ID. We also test a blank description and an impossible date. Both produce an error without changing the collection. A success message alone is not enough, so the tests compare the stored fields with the input.
 
-> Hi, I am [A], and this is my student ID. Our project is a personal information manager written in Java. You use it from a terminal to keep notes, tasks, events and contacts together. You can save the collection as a .pim file and load it again next time. I will start with the four record types.
+第 4 页 / B / 约 35 秒
+解释表达式含义，不逐个念符号。
 
-**提示**
+A search condition can check a type, find text in a field, or compare a date and time. We combine conditions using and, or and not. Not has the highest priority, followed by and, then or. Parentheses change the grouping. Here, the record must be a task or an event, and its description must contain report. A record of the right type without that word will not match.
 
-- 先露脸、举学生证，停 3 秒再说话。
-- 不要念标题；一句话说清“我们做了什么、给谁用”。
-- 说完四种记录类型后切到第 2 页。
+第 5 页 / C / 约 35 秒
+先介绍自己的真实姓名并出示学生证。页面展示输出摘录，程序会显示完整字段与 ID。
 
----
+The third requirement is to return matching records. The CLI sends the condition to the model, then displays the results. Here, Finish report matches and Group meeting does not, so we get one record. The result keeps its session number, two. The terminal also shows the full stored ID and fields. Search does not change any records. Results follow insertion order, with each match appearing once. If nothing matches, the program reports zero records and accepts the next command.
 
-## 第 2 页 · 四类记录（A，45 秒）
+第 6 页 / C / 约 40 秒
+顺架构图说明调用关系，指出 ConsoleView 只负责格式化。
 
-> A note stores plain text. A task has a description and a deadline. An event has a description, a start time and an alarm time. A contact has a name, an address and a mobile number. Each record has an ID that stays the same when we edit it or load it from a file. The same commands work with all four types: create, update, search, print, delete, save and load. For example, we can update a task deadline without changing its description.
+PIMCli reads commands and resolves short numbers to stored IDs. ConsoleView formats the colored output. PIMModel owns the records and delegates searches to PIRSearch. The CLI calls PIMFileCodec to save and load, and AtomicFileWriter handles staged file replacement. The model does not depend on terminal input, so we can test it directly. An update validates a replacement before storing it. An ordered map keeps output predictable, and search scans the collection. This design uses extra record allocation and temporary disk space, which are acceptable for this local single-user application.
 
-**提示**
+第 7 页 / D / 约 35 秒
+先介绍自己的真实姓名并出示学生证。讲同一 ID 与先验证后替换，不逐个念 getter。
 
-- 手依次指四个卡片，说到哪个指哪个，节奏自然慢下来。
-- 重音放在 **stable ID** 和 **one set of commands**。
-- 不要逐字段解释——SRS 里有；这里只建立“四类、一套命令、一个文件”的印象。
+All four record types extend the abstract PIR class. Their fields are immutable. Updating a task builds a replacement with the same stored ID and checks it before changing the collection. A failed update therefore leaves the original record intact. PIMModel keeps insertion order and returns immutable snapshots. In the file, each record has its own block. Text fields use Base64 so that spaces, newlines and Unicode can survive saving and loading. Times are stored to the minute.
 
----
+第 8 页 / D / 约 40 秒
+先讲保存失败的具体例子，再报测试数量和覆盖率。
 
-## 第 3 页 · 需求 1：创建 PIR（B，35 秒）
+Our main testing lesson came from failed saves. An error message does not tell us whether the previous file survived. The test starts with an existing saved collection and injects a failure during the staged write. It then compares the original bytes and checks that the temporary file was removed. This tests the data-preservation requirement directly. All fifty-six model tests pass. The current Windows run reports ninety-nine point three zero percent line coverage and ninety-five point nine zero percent branch coverage. The assertions check the results behind those measurements. Thank you.
 
-> I am [B], and this is my student ID. The first requirement is to create a record. This command creates a task with the description Finish report and a deadline. It returns an ID that we can use to print, update or delete the task. To check the result, we compare the stored description and deadline with the input. We also try a blank description and an impossible date, such as February thirtieth. Both should give an error and leave the collection unchanged.
-
-**提示**
-
-- 开头出示学生证，再讲内容。
-- 指命令行那一行；**不要念 UUID**，说 “returns a unique ID” 就够。
-- 说明两种检查：有效输入保存正确字段；无效输入报错且不改变记录。
-
----
-
-## 第 4 页 · 需求 2：定义搜索条件（B，35 秒）
-
-> Search conditions can check the record type, look for text in a field, or compare a time with a given date and time. We combine conditions using and, or and not. Not is evaluated first, then and, then or; parentheses change the grouping. In this example, the parentheses select tasks or events. The description must also contain report. A task or event without that word will not match.
-
-**提示**
-
-- 按 TYPE / TEXT / TIME 三行依次指。
-- 讲到底部表达式时，手势比一下括号：“括号先算”。
-- 不要把 `&&`、`||` 念成符号，说 and / or / not，听感更好。
-- 不要深入 tokenizer 或解析实现，那是设计文档的事。
-
----
-
-## 第 5 页 · 需求 3：搜索 PIR（C，35 秒）
-
-> I am [C], and this is my student ID. The third requirement is to return the records that match a search. The CLI passes the condition to the model and prints the results. Here, the task Finish report matches, so the output starts with one record. Each matching record appears once, in insertion order, with its ID and fields. A search leaves the collection unchanged. If nothing matches, the program prints zero records and waits for the next command.
-
-**提示**
-
-- 先亮学生证。
-- 指 “1 record(s)” 那行，再指记录行。
-- 三个关键词加重：**read-only**、**insertion order**、**zero is normal**。
-- 结合屏幕上的任务说明为什么匹配，不额外展开性能测试。
-
----
-
-## 第 6 页 · 设计：架构（C，40 秒）
-
-> Our design is MVC-inspired. PIMCli handles commands, with ConsoleView formatting the terminal; PIMModel owns records and delegates search. The CLI calls PIMFileCodec directly, and AtomicFileWriter stages and replaces saved files. These boundaries let us test domain rules without terminal input. Immutable replacements prevent partial updates, while ordered storage makes results predictable. Linear search is sufficient for this project scope; an index would add maintenance complexity. The trade-off is extra allocation and temporary disk space.
-
-**提示**
-
-- 顺箭头走一遍：Terminal → PIMCli → PIMModel，再向下指 Codec 和 Search。
-- 强调 **model 不依赖 terminal**，这是能单测的原因，也是设计文档里的核心理由。
-- 不要把 MVC 说成“三个独立的 Java 包”——我们是一个 CLI 适配器 + 一个 model 包。
-
----
-
-## 第 7 页 · 设计：记录模型（D，35 秒）
-
-> I am [D], and this is my student ID. All four record types extend an abstract PIR class and are immutable. An update builds and validates a replacement with the same ID, and commits it only if it is valid, so a rejected update cannot leave a half-changed record. The collection keeps insertion order, and the .pim file stores one block per record, with Base64 text fields and yyyy-MM-dd HH:mm timestamps.
-
-**提示**
-
-- 先亮学生证。
-- 指类图：PIR 在上，四个子类在下，一句带过继承关系。
-- 核心是 **same ID + validate before commit**，用手比“先验证、后提交”。
-- 不要逐个念 getter / 字段，讲设计意图而不是 API 清单。
-
----
-
-## 第 8 页 · 经验教训 + 收尾（D，40 秒）
-
-> Our main testing lesson concerns failed saves. An error message does not tell us whether the old file survived. In this test, we start with an existing file and interrupt the staged write. We then compare the original bytes and check that the temporary file has been removed. These checks test the promise that a failed save preserves the previous data. All 56 model tests pass in JUnit, and JaCoCo reports 99.30 percent line coverage. The assertions check the results behind that number. Thank you.
-
-**提示**
-
-- 先讲保存失败的例子，再报测试数量和覆盖率。
-- 数字放慢：**ninety-nine point three zero percent**、**fifty-six**。
-- 说完 “Thank you” 后停 2 秒，再结束录像。
-
----
-
-## 录前检查
-
-- [ ] 摄像头、麦克风、PPT 放映模式都试过一遍
-- [ ] 学生证放在手边，四人各自开头都要出示
-- [ ] 关闭系统通知、聊天软件
-- [ ] 试录 10 秒回放，确认音量和人脸清晰
-- [ ] 计时器放在镜头外，随时看剩余时间
-
-## 可能被问到的问题
-
-1. **为什么用 UUID 而不是自增 ID？** 不需要维护计数器，碰撞概率很低；载入时仍检查重复 ID。界面提供 1、2、3 这样的会话编号，完整 UUID 保存在文件中；搜索和删除不会让编号错位。重启后用 list 查看编号。
-2. **为什么使用 JUnit？** 模型测试使用 JUnit 4.13.2 的 @Test 和 JUnitCore 自动发现、执行并报告结果；失败时退出码非零。JUnit/Hamcrest 仅用于测试，应用运行时仍只依赖 Java 标准库。CLI 集成检查单独执行。
-3. **为什么 .pim 里用 Base64？** 文本可能含换行、`=`、中文，Base64 后每行一个字段，解析不会断。
-4. **99.30% 的覆盖率说明什么？** 56 项模型测试执行了 model 中的 428/431 行；CLI 和测试报告器不计入。返回值、文件内容和异常由断言检查。
-5. **搜索会不会改数据？** 不会；搜索只读快照，测试里也对比了前后集合。
-
-
-录制前将 [A]、[B]、[C]、[D] 换成真实姓名，按完整流程排练计时。每人至少 1 分钟，总长不超过 5 分钟。
+录前核对：四人的实际发言均至少 1 分钟，总时长不超过 5 分钟。
+按自己的表达调整句子并排练。短编号只在当前运行中有效，存入 .pim 的 ID 保持不变。
+录制时采用新版 Canva 或 docs/final/05_Presentation.pdf。第 8 页统计来自 17 November 2026 的 Windows / JDK 21.0.3 验证。

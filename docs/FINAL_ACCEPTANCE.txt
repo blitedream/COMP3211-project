@@ -128,6 +128,25 @@ build/ui-verification (java21-checks.log, java8/test-results.log, package-result
 unpacked-cli.log, unpacked-restart.log, bash-launch.log and submission-guard.log).
 No domain model source or saved user data was changed by this update.
 
+Recording-material alignment (17 November 2026): the commands in the four-page
+recording guide were executed against source d501e81 in two Java processes.
+The sequence creates all four types, returns 1/1/3 search matches, updates task
+number 2, preserves that update after a rejected date, saves/restarts/loads four
+records with the same stored IDs, deletes number 1 and retains numbers 2/3/4.
+There were exactly two intentional errors. The user's demo.pim and Demo.txt
+were preserved. Evidence: build/recording-check/verification.json and session logs.
+Canva's eight pages and all eight speaker notes were aligned with the terminal
+version; the exported PDF contains the new task number, dates, ConsoleView role
+and Windows/JDK evidence. The 3-page user manual, 8-page presentation and 4-page
+recording guide were rendered and visually reviewed. Placeholder introductions
+were replaced by instructions to introduce each speaker's real name. Required
+GenAI/Honour declarations and historical verification evidence were preserved.
+The preview package contains byte-identical copies of the five course PDFs and
+excludes recording instructions, speaker notes and raw footage. Its 10 README
+file links resolve. Normal packaging still refuses missing human deliverables.
+Evidence: build/recording-check/document-verification.json. Timings in the guides
+are rehearsal targets; no new video was produced or certified by this check.
+
 Remaining: record the demo, add and review subtitles, save as demo.mp4 <=4 minutes;
 record presentation.mp4 <=5 minutes with
 each member >=1 minute and required face/ID visibility; official Honour_Declaration.pdf

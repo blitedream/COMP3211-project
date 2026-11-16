@@ -10,7 +10,8 @@ in git (see `.gitignore`).
 
 `package_submission.ps1` refuses to build the ZIP while either file is missing.
 
-The group will provide a personally recorded system demonstration for subtitling.
-The automated replay made on 17 November 2026 was not selected for submission;
-it is archived under `build/demo-video/automated_demo_unused.mp4` and is excluded
-from the submission package. Add the reviewed, subtitled recording as `demo.mp4`.
+Follow `Recording_Steps.txt` for the current terminal version. It starts from an
+empty session and uses numbers #1 to #4. Save the demonstration to
+`recording-demo.pim`, so the existing `demo.pim` does not need to be overwritten.
+Keep the original screen recording until captions and timing have been reviewed.
+Place the finished recording here as `demo.mp4`.

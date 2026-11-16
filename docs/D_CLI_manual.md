@@ -23,8 +23,8 @@ Enter commands at `pim>`, not directly in PowerShell. Commands and type names ar
 
 ```text
 create note "Buy milk"
-create task "Finish report" "2026-11-20 20:00"
-create event "Group meeting" "2026-11-10 15:00" "2026-11-10 14:30"
+create task "Finish report" "2026-11-19 18:00"
+create event "Group meeting" "2026-11-20 15:00" "2026-11-20 14:30"
 create contact Alice "Hong Kong" 12345678
 print all
 search (type = task || type = event) && description contains "report"
@@ -42,7 +42,7 @@ numbers from the current collection.
 list
 print 1
 update 1 text "New note text"
-update 2 description "Revised task" deadline "2026-11-21 18:00"
+update 2 deadline "2026-11-20 18:00"
 delete 1
 ```
 Both `2` and `#2` select record #2. Numbers remain attached to the same stored ID

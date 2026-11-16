@@ -175,8 +175,11 @@ without both MP4 files and the completed Honour Declaration. File presence
 does not verify signatures, contribution percentages, video timing or faces;
 the group must review these before submission.
 
-The [recording guide](docs/final/06_Recording_Guide.pdf) and rehearsal script in
-`presentation/` are for group preparation and are not included in the ZIP.
+The [recording guide](docs/final/06_Recording_Guide.pdf),
+[copyable commands](video/Recording_Steps.txt) and
+[speaker script](presentation/Speaker_Scripts.txt) are for group preparation
+and are not included in the ZIP. Only the two final MP4 files are copied from
+`video/`; raw footage and rehearsal notes stay in the working project.
 The single maintained presentation PDF is `docs/final/05_Presentation.pdf`.
 Save new Canva exports there. Current document builders are in `tools/`;
 old presentation drafts and obsolete generators have been removed.

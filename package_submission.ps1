@@ -88,12 +88,20 @@ $folders = [ordered]@{
     'src'             = 'src'
     'lib'             = 'lib'
     'coverage-report' = 'coverage-report'
-    'video'           = 'video'
 }
 foreach ($name in $folders.Keys) {
     $from = Join-Path $root $name
     if (-not (Test-Path -LiteralPath $from)) { throw "Missing folder: $name" }
     Copy-Item -LiteralPath $from -Destination (Join-Path $stage $folders[$name]) -Recurse -Force
+}
+
+# Keep raw recordings and rehearsal instructions out of the submission.
+New-Item -ItemType Directory -Path (Join-Path $stage 'video') | Out-Null
+foreach ($videoName in @('demo.mp4', 'presentation.mp4')) {
+    $videoSource = Join-Path $root "video/$videoName"
+    if (Test-Path -LiteralPath $videoSource -PathType Leaf) {
+        Copy-Item -LiteralPath $videoSource -Destination (Join-Path $stage "video/$videoName")
+    }
 }
 
 # Copy the five course documents; recording guides stay in the working project.
