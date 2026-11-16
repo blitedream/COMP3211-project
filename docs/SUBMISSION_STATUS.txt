@@ -5,7 +5,10 @@ Non-video requirements audited; SRS 1.2, design/manuals and Canva updated.
 Model line coverage 428/431 (99.30%);
 branch coverage 257/268 (95.90%). See FINAL_ACCEPTANCE.txt for evidence and limits.
 
-Remaining: two MP4 recordings and official Honour Declaration, then final ZIP.
+Local demo.mp4 prepared: 3:47, 1080p, English captions, no audio. It is a labelled
+automated replay of real CLI commands and output; fresh-process save/load verified.
+Remaining: group review of the demo, presentation.mp4 and official Honour
+Declaration, then final ZIP. Video files stay local and are not stored in Git.
 Rebuild PDFs with tools/build_submission_docs.py after regenerating coverage.
 Edit the current SRS DOCX directly. The canonical Canva PDF is
 docs/final/05_Presentation.pdf; the current rehearsal script is
