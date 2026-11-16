@@ -33,7 +33,7 @@ The third requirement is to return matching records. The CLI sends the condition
 第 6 页 / C / 约 40 秒
 顺架构图说明调用关系，指出 ConsoleView 只负责格式化。
 
-PIMCli reads commands and resolves short numbers to stored IDs. ConsoleView formats the colored output. PIMModel owns the records and delegates searches to PIRSearch. The CLI calls PIMFileCodec to save and load, and AtomicFileWriter handles staged file replacement. The model does not depend on terminal input, so we can test it directly. An update validates a replacement before storing it. An ordered map keeps output predictable, and search scans the collection. This design uses extra record allocation and temporary disk space, which are acceptable for this local single-user application.
+We use an MVC-inspired design to test domain rules separately from terminal input. ConsoleView is the view, PIMCli is the controller, and PIMModel is the model. PIMCli resolves short numbers to stored IDs. PIMModel owns the records and delegates searches to PIRSearch. PIMFileCodec saves and loads collections, using AtomicFileWriter for staged replacement. Updates validate replacement records before storing them. An ordered map keeps output predictable, and search scans the collection. The design needs extra record allocation and temporary disk space, which are acceptable for this local single-user application.
 
 第 7 页 / D / 约 35 秒
 先介绍自己的真实姓名并出示学生证。讲同一 ID 与先验证后替换，不逐个念 getter。

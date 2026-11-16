@@ -147,6 +147,15 @@ file links resolve. Normal packaging still refuses missing human deliverables.
 Evidence: build/recording-check/document-verification.json. Timings in the guides
 are rehearsal targets; no new video was produced or certified by this check.
 
+Pre-recording review (17 November 2026): the teacher's presentation requirements
+were checked against all eight slides and the speaker script. Pages 3/4/5 cover
+creation, criterion definition and searching. Pages 6/7 cover architecture and
+record structure, and page 8 gives a concrete unit-testing lesson. Page 6 and its
+notes now explicitly name the MVC-inspired pattern, identify the view/controller/
+model and explain why terminal-independent tests are useful. The export and local
+script match. No remaining content blocker to group recording was identified.
+This is a content review, not a guarantee of marks or measured speaking duration.
+
 Remaining: record the demo, add and review subtitles, save as demo.mp4 <=4 minutes;
 record presentation.mp4 <=5 minutes with
 each member >=1 minute and required face/ID visibility; official Honour_Declaration.pdf
