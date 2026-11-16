@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-& "$PSScriptRoot/run_d_tests.ps1"
+& "$PSScriptRoot/test_all.ps1"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # Agent option strings can corrupt non-ASCII absolute paths on Windows.
 # Keep all agent/report paths relative to the project directory.

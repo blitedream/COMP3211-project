@@ -17,7 +17,7 @@ No Maven, Gradle or runtime dependency installation is needed. The JAR files in
 
 ## Start the application
 
-On Windows, double-click **启动 PIM.cmd** in this folder. It opens the terminal,
+On Windows, double-click **Start_PIM.cmd** in this folder. It opens the terminal,
 compiles the source and launches the PIM prompt with quick-start examples.
 Keep the launcher in the project folder. A JDK is still required; missing Java
 or startup failures leave an explanation visible. No system execution-policy
@@ -28,7 +28,7 @@ folder. Use `save` before `quit`; there is no automatic save.
 Open PowerShell in this repository's root directory and run:
 
 ```powershell
-.\run.ps1
+.\run_pim.ps1
 ```
 
 The script compiles the application into `build/classes` and starts
@@ -62,13 +62,13 @@ for build and debugging instructions.
 Run the complete existing model and CLI integration suite:
 
 ```powershell
-.\run_d_tests.ps1
+.\test_all.ps1
 ```
 
 To run only the model suites:
 
 ```powershell
-.\run_tests.ps1
+.\test_model.ps1
 ```
 
 Both scripts compile source and test files. A failed compilation or test returns
@@ -105,9 +105,14 @@ relative PIM save paths resolve inside this repository.
 | `src/main/java/cli/` | D: command-line interface and integration |
 | `src/test/java/model/` | Automated model tests |
 | `src/test/java/cli/` | CLI integration checks |
-| `run.ps1` | Compile and start the application |
-| `run_tests.ps1` | Compile and run model tests |
-| `run_d_tests.ps1` | Run model tests followed by CLI checks |
+| `Start_PIM.cmd` | Double-click launcher for Windows |
+| `run_pim.ps1` | Compile and start the application |
+| `test_model.ps1` | Compile and run model tests |
+| `test_all.ps1` | Run model tests followed by CLI checks |
+| `generate_coverage.ps1` | Run all tests and regenerate model coverage |
+| `pim.sh` | Bash entry point for running, testing and coverage |
+| `lib/` | Bundled test and coverage tools |
+| `coverage-report/` | Detailed JaCoCo HTML report |
 | `docs/final/` | Formal SRS, design, manuals, slides and recording guide |
 
 ## Documentation
@@ -117,8 +122,8 @@ relative PIM save paths resolve inside this repository.
 - [User manual](docs/final/03_User_Manual.pdf)
 - [Developer manual](docs/final/04_Developer_Manual.pdf)
 - [Presentation slides](docs/final/05_Presentation.pdf)
-- [Requirements coverage](Requirements_Coverage.pdf)
-- [Model line coverage](Model_Line_Coverage.pdf)
+- [Requirements coverage](Requirements_Coverage_Report.pdf)
+- [Model line coverage](Model_Line_Coverage_Report.pdf)
 
 The ZIP stores the SRS, design, manuals and slides under `documents/`.
 Both coverage reports are at the ZIP root.
@@ -127,27 +132,27 @@ Both coverage reports are at the ZIP root.
 
 The 56 model cases use JUnit 4 `@Test` and `JUnitCore` through
 `testsupport.NamedTestRunner`, which prints each case's name and outcome.
-Run `bash pim.sh test` or `./run_tests.ps1`; CLI integration checks remain a
+Run `bash pim.sh test` or `./test_model.ps1`; CLI integration checks remain a
 separate executable. Add both JUnit and Hamcrest JARs from `lib/` to the IDE
 test classpath. Application execution needs neither JAR.
 
 <!-- REPOSITORY-ONLY: the packager omits the following authoring instructions. -->
 ## Build the submission archive
 
-1. Fill `Honour_Declaration_TEMPLATE.docx`, export it as PDF and save it as
+1. Fill `Honour_Declaration_Template.docx`, export it as PDF and save it as
    `Honour_Declaration.pdf` in the repository root.
 2. Record `video/demo.mp4` (at most 4 minutes) and `video/presentation.mp4`
    (at most 5 minutes).
 3. Run:
 
 ```powershell
-.\make_submission.ps1
+.\package_submission.ps1
 ```
 
 The script writes `build/COMP3211_submission_<timestamp>.zip` and verifies that
 `Honour_Declaration.pdf` sits at the archive root, as the course requires.
 
-Before the human deliverables are ready, use `./make_submission.ps1 -Preview`
+Before the human deliverables are ready, use `./package_submission.ps1 -Preview`
 to create `build/COMP3211_PREVIEW_NOT_FOR_SUBMISSION_<timestamp>.zip` for an
 unpack-and-run check. It includes a prominent `NOT_FOR_SUBMISSION.txt` listing
 missing materials. The normal command still refuses to produce a submission
@@ -156,7 +161,7 @@ does not verify signatures, contribution percentages, video timing or faces;
 the group must review these before submission.
 
 The [recording guide](docs/final/06_Recording_Guide.pdf) and rehearsal script in
-`presentation_final/` are for group preparation and are not included in the ZIP.
+`presentation/` are for group preparation and are not included in the ZIP.
 The single maintained presentation PDF is `docs/final/05_Presentation.pdf`.
 Save new Canva exports there. Current document builders are in `tools/`;
 old presentation drafts and obsolete generators have been removed.

@@ -8,4 +8,4 @@ in git (see `.gitignore`).
 | `demo.mp4` | System demonstration, MP4, **no more than 4 minutes**. Show the most important features: create the four PIR types, search, update, print, delete, save and load. |
 | `presentation.mp4` | Group presentation recording, MP4, **no more than 5 minutes**. Every member speaks for at least 1 minute, shows their student ID card and face at the start, and the current speaker stays visible. |
 
-`make_submission.ps1` refuses to build the ZIP while either file is missing.
+`package_submission.ps1` refuses to build the ZIP while either file is missing.

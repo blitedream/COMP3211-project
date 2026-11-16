@@ -103,7 +103,7 @@ alarm-before-start ordering because Appendix B does not specify it.
 
 ## Verification
 
-Run `./run_tests.ps1` from the project root on Windows. The script compiles
+Run `./test_model.ps1` from the project root on Windows. The script compiles
 Java 8 compatible classes and runs six automatically executable unit tests.
 The tests exercise creation of all four types, required-field validation,
 updates, atomic rejection of invalid updates, imported IDs, duplicate IDs,

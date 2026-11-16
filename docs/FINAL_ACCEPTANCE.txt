@@ -46,7 +46,7 @@ and skipped fixtures are nested helper classes, not invoked as model test suites
 Coverage excludes CLI tests and the testsupport classes.
 Model line coverage 428/431 = 99.30%; branch 257/268 = 95.90%; methods 95/95.
 JaCoCo report emitted no class mismatch warnings. Relative agent paths fix the risk of
-reading stale coverage in non-ASCII Windows directories. run_coverage.ps1 rejects WARN.
+reading stale coverage in non-ASCII Windows directories. generate_coverage.ps1 rejects WARN.
 Uncovered lines: unsupported record guard in codec (collection rejects such records),
 and the suppression of a staging-cleanup IOException. No exhaustive claim is made.
 
@@ -56,7 +56,7 @@ record inheritance and testing lesson. Page 6 explains boundaries and trade-offs
 Page 8 shows an existing file, injected partial-write failure, byte-equality/cleanup
 assertions and measured coverage. Import spacing/labels repaired in Canva. Notes and
 local speaker script updated. The final Canva export is docs/final/05_Presentation.pdf.
-The identical duplicate in presentation_final was removed during project cleanup.
+The identical duplicate in presentation was removed during project cleanup.
 
 Document QA: SRS DOCX rendered through Word; formal PDFs rendered and reviewed.
 Updated design, developer manual and both root reports were regenerated and rendered;
@@ -64,7 +64,7 @@ changed pages were visually reviewed. Formal PDFs have no empty pages. The numbe
 SRS requirements and Canva deck were preserved. Presentation copies were checked
 byte-for-byte before consolidating them into the single final PDF.
 
-Packaging: make_submission.ps1 -Preview creates a clearly labelled incomplete archive
+Packaging: package_submission.ps1 -Preview creates a clearly labelled incomplete archive
 with NOT_FOR_SUBMISSION.txt; it never pretends that videos or the declaration exist.
 The packaged README links to documents/ and omits repository-only authoring steps.
 All 10 README file links resolve; formal PDFs match source bytes. The packager checks
@@ -84,8 +84,16 @@ Local evidence: build/named-runner-verification.log, build/final-coverage-verifi
 build/runner-failure-exit.log, build/java8-verification/test-results.log,
 build/unpacked-verification.log and build/unpacked-cli-smoke.log.
 
+Filename update: English entry points and report names are used consistently in the
+scripts, README, editable SRS and formal PDFs. Start_PIM.cmd passed from another
+directory and from an extracted preview ZIP. generate_coverage.ps1 passed all 56
+model cases, 3 reporter checks and CLI integration checks; model lines remain
+428/431. Preview links and the missing-human-materials guard passed. Source files,
+design diagrams and the Canva PDF are unchanged. The updated SRS and manual/report
+pages were rendered and reviewed. Evidence: build/rename-verification/result.txt.
+
 Remaining human work only: demo.mp4 <=4 minutes; presentation.mp4 <=5 minutes with
 each member >=1 minute and required face/ID visibility; official Honour_Declaration.pdf
 with agreed contribution percentages and all required declarations completed. Then run
-make_submission.ps1 and inspect the final ZIP. Final timing/fluency and teacher quality
+package_submission.ps1 and inspect the final ZIP. Final timing/fluency and teacher quality
 judgments cannot be certified by this audit. Full marks are an objective, not a guarantee.

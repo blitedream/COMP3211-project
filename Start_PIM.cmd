@@ -12,7 +12,7 @@ if errorlevel 1 goto missingjava
 where javac >nul 2>&1
 if errorlevel 1 goto missingjava
 echo Starting PIM...
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0run.ps1"
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0run_pim.ps1"
 set "pimExit=%errorlevel%"
 if not "%pimExit%"=="0" (
     echo.

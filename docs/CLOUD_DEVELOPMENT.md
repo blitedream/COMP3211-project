@@ -48,15 +48,15 @@ requested scope and preserve the CLI and Java standard-library constraints.
 
 ## Current artifacts and editing sources
 
-- `docs/PIM_SRS_Draft.docx`: SRS v1.2 editing source. Edit this document directly.
+- `docs/PIM_SRS.docx`: SRS v1.2 editing source. Edit this document directly.
 - `tools/build_submission_docs.py` and `tools/document_details.py`: formal PDF
   generation and design detail sources (Python packages are needed only if
   regenerating documents; they are not Java application dependencies).
 - `docs/final/`: formal SRS, design, manuals, presentation and recording guide.
-- `Requirements_Coverage.pdf` and `Model_Line_Coverage.pdf`: submission reports.
+- `Requirements_Coverage_Report.pdf` and `Model_Line_Coverage_Report.pdf`: submission reports.
 - `docs/final/05_Presentation.pdf`: the single maintained eight-page Canva export.
   Save future Canva exports directly here; the PDF builder preserves this file.
-- `presentation_final/Speaker_Scripts_Revised.txt`: current speaker script.
+- `presentation/Speaker_Scripts.txt`: current speaker script.
 - `docs/FINAL_ACCEPTANCE.txt`: prior quality audit, including its limitations.
 - `docs/SUBMISSION_STATUS.txt`: pending submission work.
 
@@ -64,7 +64,7 @@ requested scope and preserve the CLI and Java standard-library constraints.
 
 The team must complete the two videos and official Honour Declaration.
 After the team supplies `video/demo.mp4`, `video/presentation.mp4` and
-`Honour_Declaration.pdf`, run `make_submission.ps1` on Windows and inspect the
+`Honour_Declaration.pdf`, run `package_submission.ps1` on Windows and inspect the
 final archive. Those files are intentionally ignored by Git.
 
 The previous estimated score is not a teacher grade or a promise of full marks.

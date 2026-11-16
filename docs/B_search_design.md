@@ -135,7 +135,7 @@ every stored PIR unchanged.
 ## Verification
 
 `src/test/java/model/SearchTest.java` is a self-contained `main`, same style as
-`ModelCoreTest`. `run_tests.ps1` runs it after the core tests. The tests cover
+`ModelCoreTest`. `test_model.ps1` runs it after the core tests. The tests cover
 type filters, each text field, case-insensitive contains, all three time
 relations, missing-field comparisons, `&&` / `||` / `!` with precedence and
 parentheses, insertion order, an empty result, malformed criteria, and that a

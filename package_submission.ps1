@@ -6,8 +6,8 @@
 #   video/presentation.mp4   the <= 5 minute group presentation recording
 #
 # Usage:
-#   .\make_submission.ps1
-#   .\make_submission.ps1 -Preview  # clearly marked incomplete review archive
+#   .\package_submission.ps1
+#   .\package_submission.ps1 -Preview  # clearly marked incomplete review archive
 #
 # The script only reads the repository; it writes the staging folder and the ZIP
 # under build/ and refuses to clear anything outside that folder.
@@ -52,14 +52,14 @@ New-Item -ItemType Directory -Path $stage | Out-Null
 
 # Files that must sit at the ZIP root (the Honour Declaration must be one of them).
 $rootFiles = @(
-    'Requirements_Coverage.pdf',
-    'Model_Line_Coverage.pdf',
-    ([string][char]0x542F + [char]0x52A8 + ' PIM.cmd'),
-    'run.ps1',
-    'run_tests.ps1',
-    'run_d_tests.ps1',
+    'Requirements_Coverage_Report.pdf',
+    'Model_Line_Coverage_Report.pdf',
+    'Start_PIM.cmd',
+    'run_pim.ps1',
+    'test_model.ps1',
+    'test_all.ps1',
     'pim.sh',
-    'run_coverage.ps1'
+    'generate_coverage.ps1'
 )
 foreach ($f in $rootFiles) {
     $full = Join-Path $root $f

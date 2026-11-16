@@ -12,9 +12,9 @@ model uses only Java standard library classes.
 ## Run A's tests on Windows
 
 ```powershell
-.\run_tests.ps1
+.\test_model.ps1
 ```
 
 The public API is in `src/main/java/model/`. The design and integration
-contract are in `docs/A_core_design.md`. The editable SRS draft is in
-`docs/PIM_SRS_Draft.docx`.
+contract are in `docs/A_core_design.md`. The editable SRS is in
+`docs/PIM_SRS.docx`.

@@ -2,14 +2,14 @@
 
 ## Developer guide
 
-Model tests use JUnit 4.13.2 and Hamcrest 1.3 bundled under `lib/`. Add both JARs to the IDE test classpath. The application has no third-party runtime dependencies. Run `bash pim.sh test` on Linux or `run_d_tests.ps1` on Windows.
+Model tests use JUnit 4.13.2 and Hamcrest 1.3 bundled under `lib/`. Add both JARs to the IDE test classpath. The application has no third-party runtime dependencies. Run `bash pim.sh test` on Linux or `test_all.ps1` on Windows.
 Developed and tested on Windows with Temurin JDK 21.0.3; sources target Java 8. On 17 November 2026, the model, reporter and CLI checks also compiled and passed on Windows with Azul Zulu JDK 8u512 (1.8.0_512-b09).
 Only standard Java libraries are used. Open the project folder in an IDE with Java support (for example IntelliJ IDEA), mark src/main/java as sources and src/test/java as tests, and run or debug cli.PIMCli.main.
 From PowerShell in the repository root:
 
 ```powershell
-.\run.ps1
-.\run_d_tests.ps1
+.\run_pim.ps1
+.\test_all.ps1
 ```
 The first command compiles and launches the interactive app. The second compiles all sources and runs 56 model cases, three reporter checks and the CLI integration checks. No Maven or downloaded runtime dependencies are needed.
 

@@ -9,4 +9,4 @@ Remaining: two MP4 recordings and official Honour Declaration, then final ZIP.
 Rebuild PDFs with tools/build_submission_docs.py after regenerating coverage.
 Edit the current SRS DOCX directly. The canonical Canva PDF is
 docs/final/05_Presentation.pdf; the current rehearsal script is
-presentation_final/Speaker_Scripts_Revised.txt.
+presentation/Speaker_Scripts.txt.
