@@ -58,7 +58,7 @@ public final class PIRSearch {
     }
 
     private static boolean isTimeOperator(String operator) {
-<span class="pc bpc" id="L61" title="1 of 6 branches missed.">        return &quot;&lt;&quot;.equals(operator) || &quot;&gt;&quot;.equals(operator) || &quot;=&quot;.equals(operator);</span>
+<span class="fc bfc" id="L61" title="All 6 branches covered.">        return &quot;&lt;&quot;.equals(operator) || &quot;&gt;&quot;.equals(operator) || &quot;=&quot;.equals(operator);</span>
     }
 
     private static LocalDateTime parseTime(String text) {
@@ -110,8 +110,8 @@ public final class PIRSearch {
 <span class="pc bpc" id="L110" title="1 of 2 branches missed.">                    &amp;&amp; criteria.charAt(index) != '!'</span>
 <span class="pc bpc" id="L111" title="1 of 2 branches missed.">                    &amp;&amp; criteria.charAt(index) != '('</span>
 <span class="fc bfc" id="L112" title="All 2 branches covered.">                    &amp;&amp; criteria.charAt(index) != ')') {</span>
-<span class="pc bpc" id="L113" title="1 of 2 branches missed.">                if (criteria.charAt(index) == '&quot;') {</span>
-<span class="nc" id="L114">                    throw new InvalidSearchException(&quot;Unexpected quote&quot;);</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">                if (criteria.charAt(index) == '&quot;') {</span>
+<span class="fc" id="L114">                    throw new InvalidSearchException(&quot;Unexpected quote&quot;);</span>
                 }
 <span class="fc" id="L116">                index++;</span>
             }
@@ -315,27 +315,27 @@ public final class PIRSearch {
 <span class="fc" id="L315">            Token fieldToken = tokens.get(index);</span>
 <span class="fc" id="L316">            Token operatorToken = tokens.get(index + 1);</span>
 <span class="fc" id="L317">            Token value = tokens.get(index + 2);</span>
-<span class="pc bpc" id="L318" title="2 of 4 branches missed.">            if (fieldToken.quoted || operatorToken.quoted) {</span>
-<span class="nc" id="L319">                throw new InvalidSearchException(&quot;Malformed criteria&quot;);</span>
+<span class="pc bpc" id="L318" title="1 of 4 branches missed.">            if (fieldToken.quoted || operatorToken.quoted) {</span>
+<span class="fc" id="L319">                throw new InvalidSearchException(&quot;Malformed criteria&quot;);</span>
             }
 <span class="fc" id="L321">            index += 3;</span>
 <span class="fc" id="L322">            String field = fieldToken.text;</span>
 <span class="fc" id="L323">            String operator = operatorToken.text;</span>
 <span class="fc bfc" id="L324" title="All 2 branches covered.">            if (field.equalsIgnoreCase(&quot;type&quot;)) {</span>
-<span class="pc bpc" id="L325" title="2 of 4 branches missed.">                if (!operator.equals(&quot;=&quot;) || value.quoted) {</span>
-<span class="nc" id="L326">                    throw new InvalidSearchException(&quot;Expected: type = note|task|event|contact&quot;);</span>
+<span class="pc bpc" id="L325" title="1 of 4 branches missed.">                if (!operator.equals(&quot;=&quot;) || value.quoted) {</span>
+<span class="fc" id="L326">                    throw new InvalidSearchException(&quot;Expected: type = note|task|event|contact&quot;);</span>
                 }
 <span class="fc" id="L328">                return new TypeCriterion(typeNamed(value.text));</span>
             }
 <span class="fc bfc" id="L330" title="All 2 branches covered.">            if (isTextField(field)) {</span>
-<span class="pc bpc" id="L331" title="2 of 4 branches missed.">                if (!operator.equalsIgnoreCase(&quot;contains&quot;) || !value.quoted) {</span>
-<span class="nc" id="L332">                    throw new InvalidSearchException(&quot;Expected: &quot; + field + &quot; contains \&quot;...\&quot;&quot;);</span>
+<span class="pc bpc" id="L331" title="1 of 4 branches missed.">                if (!operator.equalsIgnoreCase(&quot;contains&quot;) || !value.quoted) {</span>
+<span class="fc" id="L332">                    throw new InvalidSearchException(&quot;Expected: &quot; + field + &quot; contains \&quot;...\&quot;&quot;);</span>
                 }
 <span class="fc" id="L334">                return new TextCriterion(field, value.text.toLowerCase(Locale.ROOT));</span>
             }
 <span class="fc bfc" id="L336" title="All 2 branches covered.">            if (isTimeField(field)) {</span>
-<span class="pc bpc" id="L337" title="2 of 4 branches missed.">                if (!isTimeOperator(operator) || !value.quoted) {</span>
-<span class="nc" id="L338">                    throw new InvalidSearchException(</span>
+<span class="pc bpc" id="L337" title="1 of 4 branches missed.">                if (!isTimeOperator(operator) || !value.quoted) {</span>
+<span class="fc" id="L338">                    throw new InvalidSearchException(</span>
                             &quot;Expected: &quot; + field + &quot; &lt;, &gt;, or = \&quot;yyyy-MM-dd HH:mm\&quot;&quot;);
                 }
 <span class="fc" id="L341">                return new TimeCriterion(field, operator, parseTime(value.text));</span>
@@ -344,7 +344,7 @@ public final class PIRSearch {
         }
 
         private boolean consume(String text) {
-<span class="pc bpc" id="L347" title="1 of 4 branches missed.">            if (index &lt; tokens.size() &amp;&amp; !tokens.get(index).quoted</span>
+<span class="fc bfc" id="L347" title="All 4 branches covered.">            if (index &lt; tokens.size() &amp;&amp; !tokens.get(index).quoted</span>
 <span class="fc bfc" id="L348" title="All 2 branches covered.">                    &amp;&amp; tokens.get(index).text.equals(text)) {</span>
 <span class="fc" id="L349">                index++;</span>
 <span class="fc" id="L350">                return true;</span>

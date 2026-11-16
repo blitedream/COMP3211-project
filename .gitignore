@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 tmp/
 build/
+.idea/
 
 # Local presentation review images and duplicate archives
 presentation_v2/qa/

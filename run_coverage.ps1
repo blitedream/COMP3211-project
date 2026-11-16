@@ -1,14 +1,18 @@
 $ErrorActionPreference = 'Stop'
 & "$PSScriptRoot/run_d_tests.ps1"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-$execFile = Join-Path $PSScriptRoot 'build/model-coverage.exec'
-$agent = Join-Path $PSScriptRoot 'lib/org.jacoco.agent-0.8.11-runtime.jar'
-$cp = "$PSScriptRoot/build/classes;$PSScriptRoot/build/test-classes"
-$append = 'false'
-foreach ($suite in @('model.ModelCoreTest','model.SearchTest','model.PersistenceTest')) {
- & java "-javaagent:$agent=destfile=$execFile,append=$append" -cp $cp $suite
- if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
- $append = 'true'
-}
-& java -jar "$PSScriptRoot/lib/org.jacoco.cli-0.8.11-nodeps.jar" report $execFile --classfiles "$PSScriptRoot/build/classes/model" --sourcefiles "$PSScriptRoot/src/main/java" --html "$PSScriptRoot/coverage-report" --xml "$PSScriptRoot/build/coverage.xml"
-exit $LASTEXITCODE
+# Agent option strings can corrupt non-ASCII absolute paths on Windows.
+# Keep all agent/report paths relative to the project directory.
+Push-Location -LiteralPath $PSScriptRoot
+try {
+    $append = 'false'
+    foreach ($suite in @('model.ModelCoreTest','model.SearchTest','model.PersistenceTest','model.AtomicSaveTest')) {
+        & java "-javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=build/model-coverage.exec,append=$append" -cp 'build/classes;build/test-classes' $suite
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        $append = 'true'
+    }
+    $report = & java -jar lib/org.jacoco.cli-0.8.11-nodeps.jar report build/model-coverage.exec --classfiles build/classes/model --sourcefiles src/main/java --html coverage-report --xml build/coverage.xml 2>&1
+    $code = $LASTEXITCODE
+    $report | Write-Output
+    if ($code -ne 0 -or ($report -match '\[WARN\]')) { throw 'Coverage report failed validation; do not publish it.' }
+} finally { Pop-Location }

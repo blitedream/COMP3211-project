@@ -24,7 +24,7 @@ $required = @(
 foreach ($rel in $required) {
     $full = Join-Path $root $rel
     if (-not (Test-Path -LiteralPath $full)) {
-        throw "Missing required submission file: $rel (fill Honour_Declaration_TEMPLATE.docx and export it as Honour_Declaration.pdf; record both videos into video/)"
+        throw "Missing required submission file: $rel (complete the official Honour Declaration and export it as Honour_Declaration.pdf; record both videos into video/)"
     }
 }
 
@@ -44,9 +44,11 @@ $rootFiles = @(
     'Honour_Declaration.pdf',
     'Requirements_Coverage.pdf',
     'Model_Line_Coverage.pdf',
+    ([string][char]0x542F + [char]0x52A8 + ' PIM.cmd'),
     'run.ps1',
     'run_tests.ps1',
     'run_d_tests.ps1',
+    'pim.sh',
     'run_coverage.ps1'
 )
 foreach ($f in $rootFiles) {
@@ -61,7 +63,6 @@ $folders = [ordered]@{
     'lib'             = 'lib'
     'coverage-report' = 'coverage-report'
     'docs/final'      = 'documents'
-    'presentation_v2' = 'presentation'
     'video'           = 'video'
 }
 foreach ($name in $folders.Keys) {

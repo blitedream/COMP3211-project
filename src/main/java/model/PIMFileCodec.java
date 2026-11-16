@@ -25,14 +25,14 @@ public final class PIMFileCodec {
     private PIMFileCodec() {
     }
 
-    /** US10: write all PIRs to a file. An existing file is overwritten. */
+    /** US10: stage and atomically replace a file; unsupported atomic moves fail safely. */
     public static void save(PIMModel model, Path file) throws IOException {
         StringBuilder content = new StringBuilder();
         for (PIR record : model.listRecords()) {
             writeBlock(content, record);
             content.append('\n'); // blank line between record blocks
         }
-        Files.write(file, content.toString().getBytes(StandardCharsets.UTF_8));
+        AtomicFileWriter.write(file, content.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     private static void writeBlock(StringBuilder out, PIR record) {

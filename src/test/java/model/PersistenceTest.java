@@ -11,20 +11,8 @@ import java.util.List;
 public final class PersistenceTest {
     private static final LocalDateTime T1 = LocalDateTime.of(2026, 10, 1, 9, 0);
     private static final LocalDateTime T2 = LocalDateTime.of(2026, 10, 2, 9, 0);
-    private static int passed;
 
-    public static void main(String[] args) throws Exception {
-        testDetailStringAllTypes();
-        testDeleteExisting();
-        testDeleteMissing();
-        testDeleteThenReAdd();
-        testSaveLoadRoundTrip();
-        testSaveLoadSpecialCharacters();
-        testLoadEmptyFile();
-        testLoadMissingFile();
-        testLoadErrors();
-        System.out.println("Persistence tests passed: " + passed);
-    }
+    public static void main(String[] args) { TestSupport.runSuite(PersistenceTest.class); }
 
     /** US8: toDetailString of every PIR type contains the ID, type, and all fields. */
     private static void testDetailStringAllTypes() {
@@ -45,7 +33,6 @@ public final class PersistenceTest {
                 && event.toDetailString().contains(T1.toString()) && event.toDetailString().contains(T2.toString()), "event fields printed");
         check(contact.toDetailString().contains(contact.getId()) && contact.toDetailString().contains("[CONTACT]")
                 && contact.toDetailString().contains("Ada") && contact.toDetailString().contains("Hong Kong"), "contact fields printed");
-        passed++;
     }
 
     /** US9: after deleting an existing record, the list omits it and getRecord fails. */
@@ -56,14 +43,12 @@ public final class PersistenceTest {
         model.deleteRecord(note.getId());
         check(model.listRecords().equals(Arrays.<PIR>asList(task)), "only task remains");
         expect(RecordNotFoundException.class, () -> model.getRecord(note.getId()));
-        passed++;
     }
 
     /** US9: deleting a missing ID throws. */
     private static void testDeleteMissing() {
         PIMModel model = new PIMModel();
         expect(RecordNotFoundException.class, () -> model.deleteRecord("missing"));
-        passed++;
     }
 
     /** US9: the same ID can be added again after deletion. */
@@ -74,7 +59,6 @@ public final class PersistenceTest {
         Note again = new Note(note.getId(), "New");
         model.addRecord(again);
         check(model.getRecord(note.getId()) == again, "same id re-added");
-        passed++;
     }
 
     /** US10+US11: round trip preserves all types, IDs, and insertion order. */
@@ -104,7 +88,6 @@ public final class PersistenceTest {
         for (int i = 0; i < records.size(); i++) {
             check(records.get(i).toDetailString().equals(model.listRecords().get(i).toDetailString()), "all fields and IDs restored");
         }
-        passed++;
     }
 
     /** US10+US11: newlines, Chinese text, and special symbols survive the round trip. */
@@ -123,7 +106,6 @@ public final class PersistenceTest {
                 "newlines and symbols intact");
         check(((Task) records.get(1)).getDescription().equals("\u4e2d\u6587 task & report"),
                 "unicode intact");
-        passed++;
     }
 
     /** US11: an empty file loads as an empty model. */
@@ -131,7 +113,6 @@ public final class PersistenceTest {
         Path file = tempPim("empty.pim");
         Files.write(file, new byte[0]);
         check(PIMFileCodec.load(file).listRecords().isEmpty(), "empty file is empty model");
-        passed++;
     }
 
     /** US11: a missing file reports a clear error. */
@@ -139,39 +120,83 @@ public final class PersistenceTest {
         Path file = tempPim("missing.pim");
         Files.deleteIfExists(file);
         expect(IOException.class, () -> PIMFileCodec.load(file));
-        passed++;
     }
 
-    /** US11: unknown type, missing field, bad time, and duplicate ID all fail clearly and leave memory unchanged. */
-    private static void testLoadErrors() throws Exception {
-        Path unknown = tempPim("unknown.pim");
-        Files.write(unknown, Arrays.asList("type=DIARY", "id=x", "text=QQ=="));
-        expect(InvalidRecordException.class, () -> PIMFileCodec.load(unknown));
+    /** US11: reject UnknownType with the specified exception. */
+    private static void testLoadUnknownType() throws Exception {
+        Path file = tempPim("UnknownType.pim");
+        Files.write(file, Arrays.asList("type=DIARY", "id=x", "text=QQ=="));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
+    }
 
-        Path repeated = tempPim("repeated.pim");
-        Files.write(repeated, Arrays.asList("type=NOTE", "id=x", "text=QQ==", "text=Qg=="));
-        expect(InvalidRecordException.class, () -> PIMFileCodec.load(repeated));
-        Path missing = tempPim("missing.pim");
-        Files.write(missing, Arrays.asList("type=TASK", "id=x"));
-        expect(InvalidRecordException.class, () -> PIMFileCodec.load(missing));
+    /** US11: reject DuplicateField with the specified exception. */
+    private static void testLoadDuplicateField() throws Exception {
+        Path file = tempPim("DuplicateField.pim");
+        Files.write(file, Arrays.asList("type=NOTE", "id=x", "text=QQ==", "text=Qg=="));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
+    }
 
-        Path badTime = tempPim("badtime.pim");
-        Files.write(badTime, Arrays.asList(
-                "type=TASK", "id=x", "description=QQ==", "deadline=2026-13-01 09:00"));
-        expect(InvalidRecordException.class, () -> PIMFileCodec.load(badTime));
+    /** US11: reject MissingField with the specified exception. */
+    private static void testLoadMissingField() throws Exception {
+        Path file = tempPim("MissingField.pim");
+        Files.write(file, Arrays.asList("type=TASK", "id=x"));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
+    }
 
-        Path dup = tempPim("dup.pim");
-        Files.write(dup, Arrays.asList(
-                "type=NOTE", "id=same", "text=QQ==", "",
-                "type=NOTE", "id=same", "text=QQ=="));
-        expect(DuplicateRecordException.class, () -> PIMFileCodec.load(dup));
+    /** US11: reject InvalidTime with the specified exception. */
+    private static void testLoadInvalidTime() throws Exception {
+        Path file = tempPim("InvalidTime.pim");
+        Files.write(file, Arrays.asList("type=TASK", "id=x", "description=QQ==", "deadline=2026-13-01 09:00"));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
+    }
 
-        PIMModel model = new PIMModel();
-        Note note = model.createNote("Still here");
-        expect(InvalidRecordException.class,
-                () -> PIMFileCodec.load(unknown));
-        check(model.getRecord(note.getId()) == note, "failed load keeps memory intact");
-        passed++;
+    /** US11: reject DuplicateId with the specified exception. */
+    private static void testLoadDuplicateId() throws Exception {
+        Path file = tempPim("DuplicateId.pim");
+        Files.write(file, Arrays.asList("type=NOTE", "id=same", "text=QQ==", "", "type=NOTE", "id=same", "text=QQ=="));
+        expect(DuplicateRecordException.class, () -> PIMFileCodec.load(file));
+    }
+
+    /** US11: reject MalformedLine without returning a partial model. */
+    private static void testLoadMalformedLine() throws Exception {
+        Path file = tempPim("MalformedLine.pim");
+        Files.write(file, Arrays.asList("not-a-key-value"));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
+    }
+
+    /** US11: reject UnknownField without returning a partial model. */
+    private static void testLoadUnknownField() throws Exception {
+        Path file = tempPim("UnknownField.pim");
+        Files.write(file, Arrays.asList("type=NOTE", "id=x", "text=QQ==", "extra=yes"));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
+    }
+
+    /** US11: reject MissingId without returning a partial model. */
+    private static void testLoadMissingId() throws Exception {
+        Path file = tempPim("MissingId.pim");
+        Files.write(file, Arrays.asList("type=NOTE", "text=QQ=="));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
+    }
+
+    /** US11: reject MissingType without returning a partial model. */
+    private static void testLoadMissingType() throws Exception {
+        Path file = tempPim("MissingType.pim");
+        Files.write(file, Arrays.asList("id=x", "text=QQ=="));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
+    }
+
+    /** US11: reject MissingDeadline without returning a partial model. */
+    private static void testLoadMissingDeadline() throws Exception {
+        Path file = tempPim("MissingDeadline.pim");
+        Files.write(file, Arrays.asList("type=TASK", "id=x", "description=QQ=="));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
+    }
+
+    /** US11: reject InvalidBase64 without returning a partial model. */
+    private static void testLoadInvalidBase64() throws Exception {
+        Path file = tempPim("InvalidBase64.pim");
+        Files.write(file, Arrays.asList("type=NOTE", "id=x", "text=@@"));
+        expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** Create a test file path in the system temp directory. */

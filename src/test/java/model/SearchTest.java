@@ -8,18 +8,8 @@ import java.util.List;
 public final class SearchTest {
     private static final LocalDateTime T1 = LocalDateTime.of(2026, 10, 1, 9, 0);
     private static final LocalDateTime T2 = LocalDateTime.of(2026, 10, 2, 9, 0);
-    private static int passed;
 
-    public static void main(String[] args) {
-        testTypeFilter();
-        testTextContains();
-        testTimeComparison();
-        testLogic();
-        testMalformedCriteria();
-        testModelSearch();
-        testEdgeCases();
-        System.out.println("Search tests passed: " + passed);
-    }
+    public static void main(String[] args) { TestSupport.runSuite(SearchTest.class); }
 
     /** FR-07: type = note|task|event|contact keeps insertion order. */
     private static void testTypeFilter() {
@@ -46,7 +36,6 @@ public final class SearchTest {
         check(PIRSearch.search(notesOnly.listRecords(), "type = contact").isEmpty(),
                 "no match is an empty list");
         check(model.listRecords().equals(records), "search does not change the model");
-        passed++;
     }
 
     /** FR-07: contains matches one text field, ignoring case, and skips other types. */
@@ -81,11 +70,10 @@ public final class SearchTest {
         check(PIRSearch.search(records, "name contains \"Ada\"")
                 .equals(Arrays.<PIR>asList(contact)), "note text is not a name");
         check(model.listRecords().equals(records), "contains search does not change the model");
-        passed++;
     }
 
-    /** FR-07: deadline, start, and alarm support <, >, and =. */
-    private static void testTimeComparison() {
+    /** FR-07: DeadlineBefore; exact expected records and ordering. */
+    private static void testDeadlineBefore() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -97,30 +85,159 @@ public final class SearchTest {
 
         check(PIRSearch.search(records, "deadline < \"2026-10-02 09:00\"")
                 .equals(Arrays.<PIR>asList(early)), "deadline before excludes equals");
+    }
+
+    /** FR-07: DeadlineAfter; exact expected records and ordering. */
+    private static void testDeadlineAfter() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         check(PIRSearch.search(records, "deadline > \"2026-10-01 09:00\"")
                 .equals(Arrays.<PIR>asList(late)), "deadline after");
+    }
+
+    /** FR-07: DeadlineEqual; exact expected records and ordering. */
+    private static void testDeadlineEqual() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         check(PIRSearch.search(records, "DEADLINE = \"2026-10-01 09:00\"")
                 .equals(Arrays.<PIR>asList(early)), "deadline equals");
+    }
+
+    /** FR-07: StartBefore; exact expected records and ordering. */
+    private static void testStartBefore() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         check(PIRSearch.search(records, "start < \"2026-10-02 09:00\"")
                 .equals(Arrays.<PIR>asList(morning)), "start before");
+    }
+
+    /** FR-07: StartAfter; exact expected records and ordering. */
+    private static void testStartAfter() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         check(PIRSearch.search(records, "start > \"2026-10-01 09:00\"")
                 .equals(Arrays.<PIR>asList(later)), "start after");
+    }
+
+    /** FR-07: StartEqual; exact expected records and ordering. */
+    private static void testStartEqual() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         check(PIRSearch.search(records, "start = \"2026-10-02 09:00\"")
                 .equals(Arrays.<PIR>asList(later)), "start equals");
+    }
+
+    /** FR-07: AlarmBefore; exact expected records and ordering. */
+    private static void testAlarmBefore() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         check(PIRSearch.search(records, "alarm < \"2026-10-02 09:00\"")
                 .equals(Arrays.<PIR>asList(later)), "alarm is not the start time");
+    }
+
+    /** FR-07: AlarmAfter; exact expected records and ordering. */
+    private static void testAlarmAfter() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         check(PIRSearch.search(records, "alarm > \"2026-10-01 09:00\"")
                 .equals(Arrays.<PIR>asList(morning)), "alarm after");
+    }
+
+    /** FR-07: AlarmEqual; exact expected records and ordering. */
+    private static void testAlarmEqual() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         check(PIRSearch.search(records, "alarm = \"2026-10-02 09:00\"")
                 .equals(Arrays.<PIR>asList(morning)), "alarm equals");
+    }
+
+    /** FR-07: TimeOrder; exact expected records and ordering. */
+    private static void testTimeOrder() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         check(PIRSearch.search(records, "deadline < \"2026-10-03 09:00\"")
                 .equals(Arrays.<PIR>asList(early, late)), "time search keeps insertion order");
+    }
+
+    /** FR-07: invalid time criteria must leave all records unchanged. */
+    private static void testInvalidSearchTime() {
+        PIMModel model = new PIMModel();
+        model.createNote("Buy milk");
+        Task early = model.createTask("Early", T1);
+        model.createContact("Ada", "Hong Kong", "+852 1234 5678");
+        Task late = model.createTask("Late", T2);
+        Event morning = model.createEvent("Morning", T1, T2);
+        Event later = model.createEvent("Later", T2, T1);
+        List<PIR> records = model.listRecords();
+
         expect(InvalidSearchException.class,
                 () -> PIRSearch.search(records, "deadline < \"2026-13-01 09:00\""));
         expect(InvalidSearchException.class,
                 () -> PIRSearch.search(records, "start = \"2026-10-01\""));
         check(model.listRecords().equals(records), "invalid time does not change the model");
-        passed++;
     }
 
     /** FR-08: !, &&, and || combine criteria. && binds tighter than ||. */
@@ -158,7 +275,6 @@ public final class SearchTest {
                 .equals(Arrays.<PIR>asList(report, other, meeting, reportEvent)),
                 "not over a grouped or");
         check(model.listRecords().equals(records), "logic search does not change the model");
-        passed++;
     }
 
     /** FR-08: malformed criteria fail clearly, and no match is an empty list. */
@@ -186,7 +302,6 @@ public final class SearchTest {
                 "no match returns an empty list");
         check(model.listRecords().equals(records), "malformed search does not change the model");
         check(model.getRecord(note.getId()) == note, "the stored note is the same object");
-        passed++;
     }
 
     /** CLI calls PIMModel.search, which delegates to PIRSearch. */
@@ -204,7 +319,6 @@ public final class SearchTest {
         check(model.search("type = contact").isEmpty(), "model search returns an empty list");
         expect(InvalidSearchException.class, () -> model.search("type ="));
         check(model.listRecords().equals(before), "model search does not change stored records");
-        passed++;
     }
 
     /** Spec edges: updates, one hit per record, invalid dates, and grouping. */
@@ -262,7 +376,31 @@ public final class SearchTest {
         check(model.search("(type = note || type = task) && text contains \"a && b\"")
                 .equals(Arrays.<PIR>asList(both)),
                 "nested groups keep quoted operators literal");
-        passed++;
+    }
+
+    /** FR-08: reject UnexpectedQuote syntax, even on an empty collection. */
+    private static void testRejectUnexpectedQuote() {
+        expect(InvalidSearchException.class, () -> new PIMModel().search("text contains a\"b"));
+    }
+
+    /** FR-08: reject QuotedField syntax, even on an empty collection. */
+    private static void testRejectQuotedField() {
+        expect(InvalidSearchException.class, () -> new PIMModel().search("\"type\" = note"));
+    }
+
+    /** FR-08: reject QuotedType syntax, even on an empty collection. */
+    private static void testRejectQuotedType() {
+        expect(InvalidSearchException.class, () -> new PIMModel().search("type = \"note\""));
+    }
+
+    /** FR-08: reject TextOperator syntax, even on an empty collection. */
+    private static void testRejectTextOperator() {
+        expect(InvalidSearchException.class, () -> new PIMModel().search("text = \"milk\""));
+    }
+
+    /** FR-08: reject TimeOperator syntax, even on an empty collection. */
+    private static void testRejectTimeOperator() {
+        expect(InvalidSearchException.class, () -> new PIMModel().search("deadline contains \"2026-10-01 09:00\""));
     }
 
     private static void check(boolean condition, String description) {

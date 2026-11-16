@@ -1,0 +1,58 @@
+COMP3211 PIM - Quality acceptance, 16 November 2026
+
+Scope: all non-video deliverables in the existing local submission-prep checkout,
+plus the existing eight-page Canva presentation. Honour/video work remains human.
+No repository push was performed. Backups: build/pre-quality-20261116.
+
+1 SRS (teacher weight 6): PASS for required coverage and consistency checks.
+Version 1.2 has the six required chapters, US1-US11, FR-01-FR-12 and NFR-01-NFR-04.
+NFR-03 specifies Error: plus nonempty reason, no stack trace, unchanged data and
+successful next command. FR-11 specifies safe staged atomic saving and limits.
+Acceptance scenarios identify observable outcomes and executable evidence.
+
+2 Design (teacher weight 5): PASS for required diagrams/API descriptions.
+Includes architecture, components, inheritance, search/update sequence with dashed
+returns, activations and guarded alternatives, and internal safe-saving flow.
+Explains MVC-inspired separation, immutable replacements, ordered storage, linear
+search, recursive descent, complexity and alternatives/trade-offs. Describes new
+AtomicFileWriter and its package-private failure-injection interfaces.
+
+3 Implementation (teacher weight 6; video not assessed): PASS for non-video checks.
+Only standard Java runtime libraries; model in model package. Four PIR types,
+create/update/search/print/delete/save/load retained. Save stages bytes beside the
+destination, forces them, then requests atomic replacement. Unsupported replacement
+fails without an unsafe fallback. Partial-write and replacement-failure tests compare
+old destination bytes and assert cleanup. User/developer manuals reflect actual behavior.
+Current revision was executed on Windows/JDK 21.0.3 with Java 8 target bytecode.
+A Java 8 runtime was not re-tested for this revision; no broader certification claimed.
+
+4 Unit tests (teacher weight 4): PASS.
+ModelCoreTest 9; SearchTest 22; PersistenceTest 19; AtomicSaveTest 6: 56 named model
+cases passed, 0 failures. CLI integration checks passed separately.
+Runner contract probe: an intentional failed case produces a nonzero exit status and
+a subsequent case still runs. Probe is isolated under build/runner-probe, not submitted
+as an application test. Coverage excludes CLI tests and the test runner classes.
+Model line coverage 428/431 = 99.30%; branch 257/268 = 95.90%; methods 95/95.
+JaCoCo report emitted no class mismatch warnings. Relative agent paths fix the risk of
+reading stale coverage in non-ASCII Windows directories. run_coverage.ps1 rejects WARN.
+Uncovered lines: unsupported record guard in codec (collection rejects such records),
+and the suppression of a staging-cleanup IOException. No exhaustive claim is made.
+
+5 Presentation (teacher weight 4; delivery/video not assessed): PASS for content.
+Eight-page Canva deck retains the three required requirements examples, architecture,
+record inheritance and testing lesson. Page 6 explains boundaries and trade-offs.
+Page 8 shows an existing file, injected partial-write failure, byte-equality/cleanup
+assertions and measured coverage. Import spacing/labels repaired in Canva. Notes and
+local speaker script updated. Final PDF exported from Canva and copied byte-for-byte
+to presentation_final/PIM_Presentation.pdf and docs/final/05_Presentation.pdf.
+
+Document QA: SRS DOCX rendered through Word; formal PDFs rendered and reviewed.
+PDFs have no empty pages; final file references and test metrics cross-checked.
+Packaging script parsed successfully; root coverage reports and required source/test
+files present. Required human files are still absent, so no final submission ZIP created.
+
+Remaining human work only: demo.mp4 <=4 minutes; presentation.mp4 <=5 minutes with
+each member >=1 minute and required face/ID visibility; official Honour_Declaration.pdf
+with agreed contribution percentages and truthful AI acknowledgement. Then run
+make_submission.ps1 and inspect the final ZIP. Final timing/fluency and teacher quality
+judgments cannot be certified by this audit. Full marks are an objective, not a guarantee.

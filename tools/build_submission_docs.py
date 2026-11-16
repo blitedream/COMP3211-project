@@ -18,8 +18,9 @@ def table(rows,widths=None):
  t=Table([[p(str(c)) for c in row] for row in rows],colWidths=widths,repeatRows=1,hAlign='LEFT')
  t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#e8edf1')),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6),('LINEBELOW',(0,0),(-1,-1),.2,colors.lightgrey)]));return t
 def footer(c,d):
- c.setFont('Helvetica',8); c.drawString(42,25,'COMP3211 PIM | 15 November 2026');c.drawRightString(d.pagesize[0]-42,25,str(d.page))
+ c.setFont('Helvetica',8); c.drawString(42,25,'COMP3211 PIM | 16 November 2026');c.drawRightString(d.pagesize[0]-42,25,str(d.page))
 def build(path,title,items):
+ while items and isinstance(items[-1], Spacer): items.pop()
  SimpleDocTemplate(str(path),pagesize=A4,rightMargin=42,leftMargin=42,topMargin=40,bottomMargin=42).build([p(title,'Title'),Spacer(1,12)]+items,onFirstPage=footer,onLaterPages=footer)
 def section(title,text):return [p(title,'Heading1'),p(text),Spacer(1,8)]
 def md(text):
@@ -68,9 +69,39 @@ def diagram(kind):
   for x,title,fields in [(0,'Note','text'),(130,'Task','description, deadline'),(260,'Event','description, start, alarm'),(390,'Contact','name, address, mobile')]:
    box(x,70,120,65,title,fields);arrow(x+60,135,255,175,hollow=True)
   d.add(String(15,30,'Arrows indicate inheritance. PIMModel holds PIRs in an ordered map.',fontSize=9))
+ elif kind=='saving':
+  d=Drawing(510,140)
+  for x,title,sub in [(0,'PIMFileCodec','serialize all records'),(130,'AtomicFileWriter','stage and force'),(260,'Files.move','atomic replace'),(390,'Destination','new complete bytes')]:
+   box(x,65,120,60,title,sub)
+  for x in [120,250,380]:arrow(x,95,x+10,95)
+  d.add(String(5,35,'Failure before replacement: preserve old destination; remove staged file.',fontSize=9))
+  d.add(String(5,16,'Unsupported atomic replacement: report IOException; no unsafe fallback.',fontSize=9))
  else:
-  for title,x in [('User',45),('PIMCli',190),('PIMModel',335),('PIRSearch',465)]:d.add(String(x,235,title,textAnchor='middle',fontName='Helvetica-Bold',fontSize=10));d.add(Line(x,25,x,220,strokeColor=colors.lightgrey))
-  for y,a,b,label in [(205,45,190,'search criteria'),(177,190,335,'search(criteria)'),(149,335,465,'evaluate'),(125,465,335,'matching PIRs'),(101,335,190,'return matches'),(77,190,45,'IDs and details'),(53,45,190,'update ID deadline value'),(29,190,335,'getRecord; updateTask')]:arrow(a,y,b,y,label)
+  d=Drawing(510,490)
+  for title,x in [('User',40),('PIMCli',180),('PIMModel',325),('PIRSearch',460)]:
+   d.add(Rect(x-44,456,88,26,fillColor=colors.HexColor('#eef3f7'),strokeColor=colors.grey))
+   d.add(String(x,466,title,textAnchor='middle',fontName='Helvetica-Bold',fontSize=9))
+   d.add(Line(x,15,x,456,strokeColor=colors.lightgrey,strokeDashArray=[3,3]))
+  for x,y,h in [(180,332,108),(325,354,64),(460,376,20),(180,30,280),(325,53,235)]:
+   d.add(Rect(x-3,y,6,h,fillColor=colors.HexColor('#e2edf0'),strokeColor=colors.grey))
+  def msg(y,a,b,label,reply=False):
+   d.add(Line(a,y,b,y,strokeColor=colors.HexColor('#567086'),strokeDashArray=[3,2] if reply else None))
+   side=-1 if b>a else 1
+   d.add(Line(b,y,b+side*5,y+3,strokeColor=colors.HexColor('#567086')))
+   d.add(Line(b,y,b+side*5,y-3,strokeColor=colors.HexColor('#567086')))
+   d.add(String(min(a,b)+6,y+5,label,fontSize=7.5))
+  for y,a,b,label,reply in [(440,40,180,'search criterion',False),(418,180,325,'search(criterion)',False),(396,325,460,'search(snapshot, criterion)',False),(376,460,325,'matching PIRs',True),(354,325,180,'matches',True),(332,180,40,'IDs and details',True),(310,40,180,'update ID deadline value',False),(288,180,325,'getRecord(resolved ID)',False),(266,325,180,'current PIR',True),(236,180,325,'updateTask(id, description, deadline)',False)]:msg(y,a,b,label,reply)
+  d.add(String(187,249,'preserve unspecified fields',fontSize=7.5))
+  d.add(Rect(15,16,480,204,fillColor=None,strokeColor=colors.grey))
+  d.add(String(21,207,'alt [replacement validates]',fontSize=8))
+  d.add(Line(325,190,425,190,strokeColor=colors.grey));d.add(Line(425,190,425,173,strokeColor=colors.grey))
+  msg(173,425,325,'validate; put same ID')
+  msg(151,325,180,'replacement PIR',True);msg(129,180,40,'Updated ID',True)
+  d.add(Line(15,115,495,115,strokeColor=colors.grey,strokeDashArray=[3,3]))
+  d.add(String(21,102,'[validation fails]',fontSize=8))
+  d.add(String(333,81,'no map replacement',fontSize=8))
+  msg(64,325,180,'InvalidRecordException',True);msg(35,180,40,'Error: reason; old PIR retained',True)
+
  return d
 
 # Preserve the source DOCX and export the requirements into the formal PDF.
@@ -113,23 +144,16 @@ items=design(R,p,section,table,diagram,PageBreak)
 build(OUT/'02_Design.pdf','PIM Design Document',items)
 manual=(R/'docs/D_CLI_manual.md').read_text(encoding="utf-8")
 styles['Normal'].fontSize=9.5; styles['Normal'].leading=12.5
-build(OUT/'03_User_Manual.pdf','PIM User Manual',section('Getting started','From PowerShell in the project root, run .\\run.ps1. Enter commands at pim>. Type help to list commands.')+md(manual.split('## User guide')[1].split('## Design')[0])+section('Input errors','Correct the input and try again after Error:. Search comparisons require spaces around operators, for example type = task. Empty matches display 0 record(s). ID commands accept the full ID or any unique prefix; an ambiguous prefix is rejected.'))
+build(OUT/'03_User_Manual.pdf','PIM User Manual',section('Getting started','On Windows, double-click the startup CMD file in the project folder, or run .\\run.ps1 from PowerShell. A JDK is required. Enter commands at pim>, not in PowerShell. Type help to list commands. The double-click launcher saves relative paths in the project folder.')+md(manual.split('## User guide')[1].split('## Design')[0]))
 styles['Normal'].fontSize=10; styles['Normal'].leading=14
-build(OUT/'04_Developer_Manual.pdf','PIM Developer Manual',md(manual.split('## Developer guide')[1].split('## User guide')[0])+section('Coverage','Run .\\run_coverage.ps1. It compiles with debug information, runs all checks, then instruments only the three model test suites. JaCoCo 0.8.11 produces build/coverage.xml and coverage-report/index.html. CLI integration execution is excluded from model unit coverage.')+section('Debugging','In IntelliJ IDEA configure JDK 21, mark src/main/java as sources and src/test/java as tests, then run or debug cli.PIMCli.main. Set breakpoints in execute or PIMModel. Test entry points are self-contained main methods with explicit AssertionError checks; -ea is not required.')+section('Compatibility','Windows with JDK 21.0.3 is the verified build platform. UTF-8 compilation targets Java 8 bytecode, and the CLI and full test suite were also executed on a Java 8 runtime (1.8.0_503). The runtime uses standard libraries only. JaCoCo is a test tool.')+section('Document generation','tools/build_submission_docs.py generates PDFs using Python and ReportLab as authoring tools only. They are not application dependencies. Regenerate coverage before rebuilding the PDF reports.'))
+build(OUT/'04_Developer_Manual.pdf','PIM Developer Manual',md(manual.split('## Developer guide')[1].split('## User guide')[0])+section('Coverage','Run .\\run_coverage.ps1. It compiles with debug information, runs all checks, then instruments only the four model test suites. JaCoCo 0.8.11 produces build/coverage.xml and coverage-report/index.html. CLI integration execution is excluded from model unit coverage.')+section('Debugging','In IntelliJ IDEA configure JDK 21, mark src/main/java as sources and src/test/java as tests, then run or debug cli.PIMCli.main. Set breakpoints in execute or PIMModel. Test entry points are self-contained main methods with explicit AssertionError checks; -ea is not required.')+section('Compatibility','Windows with JDK 21.0.3 is the verified build platform. UTF-8 compilation targets Java 8 bytecode. This revision was tested on JDK 21.0.3; a Java 8 runtime was not re-tested. The runtime uses standard libraries only. JaCoCo is a test tool.')+section('Document generation','tools/build_submission_docs.py generates PDFs using Python and ReportLab as authoring tools only. They are not application dependencies. Regenerate coverage before rebuilding the PDF reports.'))
 build(R/'Requirements_Coverage.pdf','PIM Requirements Coverage',coverage(p,section,table,PageBreak))
 xml=ET.parse(R/'build/coverage.xml').getroot();counts={c.attrib['type']:(int(c.attrib['missed']),int(c.attrib['covered'])) for c in xml.findall('counter')};m,c=counts['LINE'];pct=100*c/(c+m)
 rows=[['Measure','Covered','Total','Coverage']]+[[k,str(c),str(c+m),f'{100*c/(c+m):.2f}%'] for k,(m,c) in counts.items() if k in ['LINE','BRANCH','INSTRUCTION','METHOD','CLASS']]
-build(R/'Model_Line_Coverage.pdf','PIM Model Line Coverage',[p(f'Model line coverage is {pct:.2f}%. Measured on 15 November 2026 using JaCoCo 0.8.11, javac 21.0.11 and Java 1.8.0_503.'),Spacer(1,12),table(rows,[160,100,100,151])]+section('Reproduce the measurement','Execute .\\run_coverage.ps1. Scope: build/classes/model; instrumented suites: ModelCoreTest, SearchTest and PersistenceTest. CliTest is excluded. Detailed results: coverage-report/index.html and build/coverage.xml. Regenerate this PDF after source or test changes.')+section('Interpretation','Coverage measures executed lines, not assertion strength or requirement completeness. These tests compare values and expected exceptions. Full coverage is not claimed; the project description does not prescribe a minimum percentage.'))
-# The course requests offline presentation slides in PDF format.
-from reportlab.pdfgen import canvas
-slides=[('Personal information records','Speaker A  65 seconds',['Creation requirement: retain every field and return a stable unique ID.','Four immutable types: note, task, event and contact.','PIMModel preserves order and validates replacements before updates.']),('Search criteria and results','Speaker B  65 seconds',['Criterion requirement: combine type, text and time tests with &&, || and !.','Search requirement: return matching records without changing stored data.','Example: type = task && description contains "report"','Precedence: ! before && before ||. Parentheses override it.']),('Architecture and persistence','Speaker C  65 seconds',['MVC-inspired separation isolates domain code in model.','PIMCli delegates to PIMModel. PIRSearch evaluates criteria.','PIMFileCodec stores records in UTF-8 .pim files.','Base64 text fields preserve Unicode and newlines.']),('Integration and testing lesson','Speaker D  65 seconds',['Search returns IDs. Partial updates preserve unchanged fields.','Failed loads retain the collection. Invalid input keeps the CLI usable.',f'Model line coverage: {pct:.2f}% from model unit tests only.','Testing lesson: assert every persisted field and failure outcome.'])]
-cv=canvas.Canvas(str(OUT/'05_Presentation.pdf'),pagesize=(960,540))
-for index,(title,speaker,bullets) in enumerate(slides):
- cv.setFillColor(colors.HexColor('#f7f9fb'));cv.rect(0,0,960,540,fill=1,stroke=0);cv.setFillColor(colors.HexColor('#17334b'));cv.setFont('Helvetica-Bold',30);cv.drawString(45,470,title);cv.setFont('Helvetica',14);cv.drawString(45,435,speaker);yy=375
- for b in bullets:
-  para=Paragraph(html.escape(b),ParagraphStyle(name='slide',fontSize=21,leading=29,textColor=colors.HexColor('#17334b')));w,h=para.wrap(850,100);para.drawOn(cv,50,yy-h);yy-=h+25
- cv.setFont('Helvetica',11);cv.drawString(45,25,'COMP3211 PIM');cv.drawRightString(915,25,f'{index+1} / 4');cv.showPage()
-cv.save()
-build(OUT/'06_Recording_Guide.pdf','PIM Recording and Submission Guide',section('System demonstration','Target 3 minutes 40 seconds: start (20 seconds); create four types (50); print and copy ID (20); search and update (50); save, restart and load (45); invalid input and delete (35). Record the actual program as MP4. This guide is not the video.')+section('Presentation recording','Use four slides, approximately 65 seconds per member, totaling 4 minutes 20 seconds plus brief transitions within five minutes. Each presenter must speak for at least one minute. All presenters show faces and student IDs at the beginning; the current presenter remains visible. A/B/C/D labels are speaking sections, not contribution percentages.')+section('Example demonstration','Create a task called Finish report, search type = task && description contains "report", copy its ID, and update only deadline. Print it to show the description remains. Save demo.pim, restart and load it. Try an unknown ID or invalid date, then print all to show recovery.')+section('Human completion','Review group facts, record the two MP4 videos, agree contributions and complete the official Honour Declaration with signatures and accurate AI acknowledgement. Add these materials before final submission. No names, student IDs, signatures or contribution percentages have been fabricated.'))
+build(R/'Model_Line_Coverage.pdf','PIM Model Line Coverage',[p(f'Model line coverage is {pct:.2f}%. Measured on 16 November 2026 using JaCoCo 0.8.11, javac 21.0.3 and Java 21.0.3.'),Spacer(1,12),table(rows,[160,100,100,151])]+section('Reproduce the measurement','Execute .\\run_coverage.ps1. Scope: build/classes/model; instrumented suites: ModelCoreTest, SearchTest, PersistenceTest and AtomicSaveTest. CliTest is excluded. Detailed results: coverage-report/index.html and build/coverage.xml. Regenerate this PDF after source or test changes.')+section('Interpretation','56 named model cases across four suites pass; CLI checks are separate. Coverage measures executed lines, not assertion strength or requirement completeness. These tests compare values and expected exceptions. Full coverage is not claimed; the project description does not prescribe a minimum percentage.'))
+# Preserve the reviewed Canva deck; never regenerate obsolete slides.
+import shutil
+shutil.copy2(R/'presentation_final/PIM_Presentation.pdf', OUT/'05_Presentation.pdf')
+build(OUT/'06_Recording_Guide.pdf','PIM Recording and Submission Guide',section('System demonstration','Target 3 minutes 40 seconds: start (20 seconds); create four types (50); print and copy ID (20); search and update (50); save, restart and load (45); invalid input and delete (35). Record the actual program as MP4. This guide is not the video.')+section('Presentation recording','Use the reviewed eight-slide deck: A pages 1-2, B pages 3-4, C pages 5-6, D pages 7-8. Target A/B at 70 seconds each and C/D at 75 seconds each (4 minutes 50 seconds including ID displays), leaving 10 seconds for transitions. Rehearsal targets are not measured durations. Each presenter must speak for at least one minute. All presenters show faces and student IDs at the beginning; the current presenter remains visible. A/B/C/D labels are speaking sections, not contribution percentages.')+section('Example demonstration','Create a task called Finish report, search type = task && description contains "report", copy its ID, and update only deadline. Print it to show the description remains. Save demo.pim, restart and load it. Try an unknown ID or invalid date, then print all to show recovery.')+section('Human completion','Review group facts, record the two MP4 videos, agree contributions and complete the official Honour Declaration with signatures and accurate AI acknowledgement. Add these materials before final submission. No names, student IDs, signatures or contribution percentages have been fabricated.'))
 print(f'Generated eight PDFs. Model line coverage: {pct:.2f}%')
 

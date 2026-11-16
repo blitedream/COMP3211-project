@@ -6,6 +6,7 @@ import java.util.regex.*;
 public final class CliTest {
  public static void main(String[] args) throws Exception {
   testBlankIds();
+  testErrorRecoveryContract();
   StringWriter text=new StringWriter(); PIMCli cli=new PIMCli(new PrintWriter(text,true));
   cli.execute("create note \"buy milk\"");
   Matcher m=Pattern.compile("Created ([a-f0-9-]+)").matcher(text.toString()); check(m.find(),"created ID"); String id=m.group(1);
@@ -73,6 +74,23 @@ public final class CliTest {
    output.getBuffer().setLength(0);subject.execute("print all");
    check(output.toString().contains("2 record(s)"),"ambiguous deletion preserves records");
   } finally {Files.deleteIfExists(fixture);}
+ }
+ /** NFR-03: an error has a reason, no stack trace, preserves data, and allows help next. */
+ private static void testErrorRecoveryContract() throws Exception {
+  String[] invalid = {"unknown", "create note", "create task x bad-date", "search type = alien", "delete missing", "save bad.txt"};
+  for(String command : invalid) {
+   StringWriter output = new StringWriter(); PIMCli subject = new PIMCli(new PrintWriter(output,true));
+   subject.execute("create note keep"); output.getBuffer().setLength(0);
+   subject.execute("print all"); String before = output.toString(); output.getBuffer().setLength(0);
+   check(subject.execute(command), "continues after " + command);
+   String error = output.toString().trim();
+   check(error.startsWith("Error: ") && error.length() > 7, "reason after Error for " + command);
+   check(!error.contains("Exception in thread") && !error.contains("\tat "), "no stack trace");
+   output.getBuffer().setLength(0); subject.execute("print all");
+   check(before.equals(output.toString()), "error preserves every field");
+   output.getBuffer().setLength(0); check(subject.execute("help"), "help remains available");
+   check(output.toString().contains("create"), "help output after error");
+  }
  }
  private static void check(boolean value,String message) {if(!value)throw new AssertionError(message);}
 }

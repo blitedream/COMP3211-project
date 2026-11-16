@@ -1,0 +1,144 @@
+Revised rehearsal script. Timing is a target, not a measured recording. Keep the active speaker face visible throughout. Replace name/group placeholders before recording.
+
+# COMP3211 PIM · 逐页讲稿与提示
+
+排练目标 **4:50（290 秒）**：A/B 各约 70 秒，C/D 各约 75 秒（课程要求每人至少 1 分钟），留约 10 秒给停顿和切页；实际录制必须计时。
+Canva 备注保留逐页讲稿；第 6、8 页已同步本轮修订，演示者视图可直接查看。
+
+| 讲者 | 页码 | 时间 | 内容 |
+|---|---|---|---|
+| A | 1–2 | 0:00–1:10 | 开场、系统范围 |
+| B | 3–4 | 1:10–2:20 | 需求 1 创建、需求 2 搜索条件 |
+| C | 5–6 | 2:20–3:35 | 需求 3 搜索、总体架构 |
+| D | 7–8 | 3:35–4:50 | 记录模型、经验教训 |
+
+## 通用提示
+
+- 每人开口第一句先报名字、**出示学生证 3 秒**，再进入内容——课程硬性要求，不做会扣一半分。
+- 录屏时看**摄像头**，不是看屏幕；语速约 140 词/分钟，比平时慢一点。
+- 在句子结束时切页，不要边说边切；切完停半秒再开口。
+- 数字（99.30%、56）放慢、咬清楚。
+- 每页只讲一个意思；讲不完的细节留给提问。
+
+---
+
+## 第 1 页 · 标题（A，25 秒）
+
+**English script**
+
+> Good morning. We are Group [X], and this is my student ID. Our project is a command-line personal information manager in Java. It keeps notes, tasks, events and contacts in one collection, and saves them to a single .pim file so a session can be resumed later. I will start with the scope.
+
+**提示**
+
+- 先露脸、举学生证，停 3 秒再说话。
+- 不要念标题；一句话说清“我们做了什么、给谁用”。
+- 最后一句 “I will start with the scope” 是给第 2 页的过渡，说完直接切。
+
+---
+
+## 第 2 页 · 四类记录（A，45 秒）
+
+> The system supports four record types. A note is plain text. A task has a description and a deadline. An event has a description, a start time and an alarm. A contact has a name, an address and a mobile number. Every record gets a stable ID, and one set of commands — create, update, search, print, delete, save and load — works across all four types. That is the whole scope: a terminal, one collection and one file, with no GUI and no database.
+
+**提示**
+
+- 手依次指四个卡片，说到哪个指哪个，节奏自然慢下来。
+- 重音放在 **stable ID** 和 **one set of commands**。
+- 不要逐字段解释——SRS 里有；这里只建立“四类、一套命令、一个文件”的印象。
+
+---
+
+## 第 3 页 · 需求 1：创建 PIR（B，35 秒）
+
+> My name is [B], and this is my student ID. The first requirement is creating a record. Here we create a task with a description and a deadline. The system keeps both fields and returns a unique ID, which later commands use to print, update or delete that record. It is verifiable in two directions: the stored record keeps every field, and invalid input, such as a blank description or the thirtieth of February, is rejected without changing the collection.
+
+**提示**
+
+- 开头出示学生证，再讲内容。
+- 指命令行那一行；**不要念 UUID**，说 “returns a unique ID” 就够。
+- 说 “two directions” 时用手比 1、2：字段保留 / 非法输入被拒绝且集合不变。
+- 这句是评分点：需求要 *可验证*，所以给出“怎么看出来满足了”。
+
+---
+
+## 第 4 页 · 需求 2：定义搜索条件（B，35 秒）
+
+> A criterion can test three things: the record type, whether a text field contains a string, or how a time compares with a given instant. Comparisons combine with and, or and not, and parentheses control grouping. Not binds tightest, then and, then or — In the expression shown, parentheses group tasks and events first, and the description must contain report for either type. The expression language is small, and the SRS fixes it.
+
+**提示**
+
+- 按 TYPE / TEXT / TIME 三行依次指。
+- 讲到底部表达式时，手势比一下括号：“括号先算”。
+- 不要把 `&&`、`||` 念成符号，说 and / or / not，听感更好。
+- 不要深入 tokenizer 或解析实现，那是设计文档的事。
+
+---
+
+## 第 5 页 · 需求 3：搜索 PIR（C，35 秒）
+
+> I am [C], and this is my student ID. The third requirement is the search itself. The criterion goes unchanged into the model, which returns the matching records. The CLI prints a count, then each record in insertion order, once per record. Search is read-only: it never changes the collection, and zero matches is a normal answer, not an error. The same criterion that defines the search also defines its expected output.
+
+**提示**
+
+- 先亮学生证。
+- 指 “1 record(s)” 那行，再指记录行。
+- 三个关键词加重：**read-only**、**insertion order**、**zero is normal**。
+- 不要提性能或大数据量，本项目没做这个承诺。
+
+---
+
+## 第 6 页 · 设计：架构（C，40 秒）
+
+> Our design is MVC-inspired. PIMCli combines the terminal view and controller; PIMModel owns records and delegates search. The CLI calls PIMFileCodec directly, and AtomicFileWriter stages and replaces saved files. These boundaries let us test domain rules without terminal input. Immutable replacements prevent partial updates, while ordered storage makes results predictable. Linear search is sufficient for this project scope; an index would add maintenance complexity. The trade-off is extra allocation and temporary disk space.
+
+**提示**
+
+- 顺箭头走一遍：Terminal → PIMCli → PIMModel，再向下指 Codec 和 Search。
+- 强调 **model 不依赖 terminal**，这是能单测的原因，也是设计文档里的核心理由。
+- 不要把 MVC 说成“三个独立的 Java 包”——我们是一个 CLI 适配器 + 一个 model 包。
+
+---
+
+## 第 7 页 · 设计：记录模型（D，35 秒）
+
+> I am [D], and this is my student ID. All four record types extend an abstract PIR class and are immutable. An update builds and validates a replacement with the same ID, and commits it only if it is valid, so a rejected update cannot leave a half-changed record. The collection keeps insertion order, and the .pim file stores one block per record, with Base64 text fields and yyyy-MM-dd HH:mm timestamps.
+
+**提示**
+
+- 先亮学生证。
+- 指类图：PIR 在上，四个子类在下，一句带过继承关系。
+- 核心是 **same ID + validate before commit**，用手比“先验证、后提交”。
+- 不要逐个念 getter / 字段，讲设计意图而不是 API 清单。
+
+---
+
+## 第 8 页 · 经验教训 + 收尾（D，40 秒）
+
+> Our lesson is to test the state after failure, not only the error message. Suppose a saved collection already exists and a staged write fails midway. The test compares the original file byte for byte and checks that the temporary file is removed. A thrown exception alone would miss data loss. This led to staging before atomic replacement. All 56 named model cases pass, with 99.30 percent line coverage. Coverage shows execution; the state assertions provide evidence about behaviour. Thank you.
+
+**提示**
+
+- 这是唯一的“经验教训”页，评分看重观点，不要念数字清单。
+- 数字放慢：**ninety-six point one one percent**、**twenty-two**。
+- 最后一句 “Thank you” 后停 2 秒，看着镜头，等提问；不要加 “that's all”。
+
+---
+
+## 录前检查
+
+- [ ] 摄像头、麦克风、PPT 放映模式都试过一遍
+- [ ] 学生证放在手边，四人各自开头都要出示
+- [ ] 关闭系统通知、聊天软件
+- [ ] 试录 10 秒回放，确认音量和人脸清晰
+- [ ] 计时器放在镜头外，随时看剩余时间
+
+## 可能被问到的问题
+
+1. **为什么用 UUID 而不是自增 ID？** 稳定、跨文件不冲突；用户输入时支持唯一前缀，不用敲满 36 位。
+2. **为什么不用 JUnit？** 用自包含的 main 入口，免构建工具也能跑；失败时退出码非零，可自动执行。
+3. **为什么 .pim 里用 Base64？** 文本可能含换行、`=`、中文，Base64 后每行一个字段，解析不会断。
+4. **99.30% 的覆盖率说明什么？** 只覆盖 model（CLI 排除在外），证明行被执行，不证明行为正确——这正是我们的教训。
+5. **搜索会不会改数据？** 不会；搜索只读快照，测试里也对比了前后集合。
+
+
+Revision 16 Nov 2026: A/B target 70 seconds each; C/D target 75 seconds each. Total target 4:50 including IDs, leaving 10 seconds for transitions. Actual timing requires rehearsal. Slide 6: trace both model/search and codec/atomic-writer paths. Slide 8: point to Given, When, Then and explain byte equality after injected failure. Coverage 428/431 lines and 257/268 branches; 56 model cases.

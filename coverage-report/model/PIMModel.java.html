@@ -18,8 +18,8 @@ public final class PIMModel {
 
     /** Construct a model from decoded PIRs; duplicate IDs are rejected. */
 <span class="fc" id="L20">    public PIMModel(Collection&lt;? extends PIR&gt; initialRecords) {</span>
-<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        if (initialRecords == null) {</span>
-<span class="nc" id="L22">            throw new InvalidRecordException(&quot;initialRecords is required&quot;);</span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        if (initialRecords == null) {</span>
+<span class="fc" id="L22">            throw new InvalidRecordException(&quot;initialRecords is required&quot;);</span>
         }
 <span class="fc bfc" id="L24" title="All 2 branches covered.">        for (PIR record : initialRecords) {</span>
 <span class="fc" id="L25">            addRecord(record);</span>
@@ -28,12 +28,12 @@ public final class PIMModel {
 
     /** Add a decoded PIR without changing its stable ID. */
     public PIR addRecord(PIR record) {
-<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (record == null) {</span>
-<span class="nc" id="L32">            throw new InvalidRecordException(&quot;record is required&quot;);</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        if (record == null) {</span>
+<span class="fc" id="L32">            throw new InvalidRecordException(&quot;record is required&quot;);</span>
         }
-<span class="pc bpc" id="L34" title="1 of 8 branches missed.">        if (!(record instanceof Note || record instanceof Task</span>
+<span class="fc bfc" id="L34" title="All 8 branches covered.">        if (!(record instanceof Note || record instanceof Task</span>
                 || record instanceof Event || record instanceof Contact)) {
-<span class="nc" id="L36">            throw new InvalidRecordException(&quot;Unsupported PIR type&quot;);</span>
+<span class="fc" id="L36">            throw new InvalidRecordException(&quot;Unsupported PIR type&quot;);</span>
         }
 <span class="fc bfc" id="L38" title="All 2 branches covered.">        if (records.containsKey(record.getId())) {</span>
 <span class="fc" id="L39">            throw new DuplicateRecordException(&quot;Record ID already exists: &quot; + record.getId());</span>

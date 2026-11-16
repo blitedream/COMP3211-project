@@ -6,16 +6,23 @@ The application uses only Java standard libraries.
 
 ## Requirements
 
-- Windows with PowerShell.
+- Windows with PowerShell, or Linux / Codex Cloud with Bash.
 - A JDK with `java` and `javac` available on PATH.
 - Verified with Eclipse Temurin JDK 21.0.3. Compilation targets Java 8;
-  the CLI and the full test suite were also executed on a Java 8 runtime
-  (1.8.0_503).
+  the current revision was tested on JDK 21.0.3, not re-tested on a Java 8 runtime.
 
 No Maven, Gradle or runtime dependency installation is needed. The JAR files in
 `lib/` are JaCoCo coverage tools, not application dependencies.
 
 ## Start the application
+
+On Windows, double-click **启动 PIM.cmd** in this folder. It opens the terminal,
+compiles the source and launches the PIM prompt with quick-start examples.
+Keep the launcher in the project folder. A JDK is still required; missing Java
+or startup failures leave an explanation visible. No system execution-policy
+setting is changed. Files saved using relative paths are placed in this project
+folder. Use `save` before `quit`; there is no automatic save.
+
 
 Open PowerShell in this repository's root directory and run:
 
@@ -42,7 +49,7 @@ Creation prints a record ID. `print`, `delete` and `update` accept the full
 36-character ID or any unique prefix of it (8 characters usually suffice).
 
 Quote arguments containing spaces. Dates use `yyyy-MM-dd HH:mm`.
-Save overwrites the named file. A successful load replaces the current
+Save stages and flushes a same-directory temporary file before atomic replacement. Failed staging or unsupported replacement preserves the old destination; no unsafe fallback is used. A successful load replaces the current
 collection; a failed load preserves it. Quit and end-of-input do not save
 changes automatically. Relative file paths resolve from the launch directory.
 See the [CLI user and developer guide](docs/D_CLI_manual.md) for all commands,
@@ -56,20 +63,38 @@ Run the complete existing model and CLI integration suite:
 .\run_d_tests.ps1
 ```
 
-To run only the A/B/C model suites:
+To run only the model suites:
 
 ```powershell
 .\run_tests.ps1
 ```
 
 Both scripts compile source and test files. A failed compilation or test returns
-a nonzero exit code. The model suites currently report 6 core, 7 search and
-9 persistence test groups; the additional CLI suite prints
-`CLI integration checks passed` on success. These totals are test groups,
-not counts of individual assertions or proof of complete coverage.
+a nonzero exit code. The model suites report 56 named test cases: 9 core,
+22 search, 19 persistence and 6 atomic-save cases. The additional CLI suite
+prints `CLI integration checks passed` on success. Test counts alone do not
+prove complete coverage.
 
 The existing [JaCoCo HTML report](coverage-report/index.html) is a stored report.
 Running the commands above does **not** regenerate coverage measurements.
+
+## Linux / Codex Cloud
+
+Use a JDK (21 recommended to match the locally verified version), Bash and Git.
+No Maven, Gradle or application dependency installation is required.
+
+```bash
+bash pim.sh test       # 56 model cases and CLI integration checks
+bash pim.sh run        # interactive pim> prompt
+bash pim.sh coverage   # tests and fresh model-only JaCoCo measurements
+```
+
+Cloud coverage output is written to `build/cloud-coverage-report/index.html`
+and `build/cloud-coverage.xml`, leaving the submitted report intact until the
+new measurements have been reviewed. These commands work from any directory;
+relative PIM save paths resolve inside this repository.
+See [cloud development handoff](docs/CLOUD_DEVELOPMENT.md) for the verified
+baseline, document sources and remaining human deliverables.
 
 ## Project structure and contributions
 

@@ -18,7 +18,19 @@ public final class PIMCli {
         cli.run(new BufferedReader(new InputStreamReader(System.in, "UTF-8")));
     }
     public void run(BufferedReader input) throws IOException {
-        out.println("PIM - type help for commands. Save before quitting.");
+        out.println("============================================================");
+        out.println("  PIM | Personal Information Manager");
+        out.println("  Notes - Tasks - Events - Contacts");
+        out.println("============================================================");
+        out.println("Type commands at pim>. Quick start:");
+        out.println("  create note \"Buy milk\"");
+        out.println("  print all");
+        out.println("  search type = note");
+        out.println("  save \"my-records.pim\"");
+        out.println("Type help for all commands, or quit to exit.");
+        out.println("Save before quitting: changes are not saved automatically.");
+        out.println("To resume saved work: load \"my-records.pim\"");
+        out.println();
         String line;
         while (true) {
             out.print("pim> "); out.flush();

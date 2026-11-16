@@ -1,7 +1,7 @@
 # D: CLI and integration
 
 ## Developer guide
-Developed and tested on Windows with Temurin JDK 21.0.3; sources target Java 8. The CLI and the full test suite also run on a Java 8 runtime (verified with 1.8.0_503).
+Developed and tested on Windows with Temurin JDK 21.0.3; sources target Java 8. This revision is verified on JDK 21.0.3; a Java 8 runtime was not re-tested for this revision.
 Only standard Java libraries are used. Open the project folder in an IDE with Java support (for example IntelliJ IDEA), mark src/main/java as sources and src/test/java as tests, and run or debug cli.PIMCli.main.
 From PowerShell in the repository root:
 
@@ -112,7 +112,7 @@ search deadline < "2026-11-20 20:00"
 search !(type = note || type = contact)
 ```
 
-Save overwrites the named .pim file. Load replaces the entire current collection only after a successful read. Save first if current changes are needed. Relative paths resolve from the directory where you launched the program. Quit, exit and end-of-input do not automatically save. Invalid commands, arguments, dates, IDs and files print `Error:` and allow the next command; failed updates and failed loads preserve current data.
+Save stages all bytes in the destination directory, then atomically replaces the named .pim file. If staging or replacement fails, the old file is preserved; a filesystem without atomic replacement support reports an error instead of falling back to an unsafe overwrite. The destination directory must be writable. This does not guarantee recovery from power loss or disk corruption. Load replaces the entire current collection only after a successful read. Save first if current changes are needed. Relative paths resolve from the directory where you launched the program. Quit, exit and end-of-input do not automatically save. Invalid commands, arguments, dates, IDs and files print `Error:` and allow the next command; failed updates and failed loads preserve current data.
 
 ## Design
 `cli.PIMCli` is the terminal view/controller. Its constructor accepts a PrintWriter; `run(BufferedReader)` drives the loop and may throw IOException for terminal read failures; `execute(String)` returns false for exit and handles expected command errors. The existing model owns all business rules, search and persistence. No A/B/C model files were changed.

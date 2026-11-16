@@ -25,14 +25,14 @@ public final class PIMFileCodec {
     private PIMFileCodec() {
     }
 
-    /** US10: write all PIRs to a file. An existing file is overwritten. */
+    /** US10: stage and atomically replace a file; unsupported atomic moves fail safely. */
     public static void save(PIMModel model, Path file) throws IOException {
 <span class="fc" id="L30">        StringBuilder content = new StringBuilder();</span>
 <span class="fc bfc" id="L31" title="All 2 branches covered.">        for (PIR record : model.listRecords()) {</span>
 <span class="fc" id="L32">            writeBlock(content, record);</span>
 <span class="fc" id="L33">            content.append('\n'); // blank line between record blocks</span>
 <span class="fc" id="L34">        }</span>
-<span class="fc" id="L35">        Files.write(file, content.toString().getBytes(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L35">        AtomicFileWriter.write(file, content.toString().getBytes(StandardCharsets.UTF_8));</span>
 <span class="fc" id="L36">    }</span>
 
     private static void writeBlock(StringBuilder out, PIR record) {
@@ -93,8 +93,8 @@ public final class PIMFileCodec {
 <span class="fc" id="L93">        Set&lt;String&gt; seen = new HashSet&lt;String&gt;();</span>
 <span class="fc bfc" id="L94" title="All 2 branches covered.">        for (String line : block) {</span>
 <span class="fc" id="L95">            int eq = line.indexOf('=');</span>
-<span class="pc bpc" id="L96" title="1 of 2 branches missed.">            if (eq &lt;= 0) {</span>
-<span class="nc" id="L97">                throw new InvalidRecordException(&quot;Malformed line: &quot; + line);</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (eq &lt;= 0) {</span>
+<span class="fc" id="L97">                throw new InvalidRecordException(&quot;Malformed line: &quot; + line);</span>
             }
 <span class="fc" id="L99">            String key = line.substring(0, eq);</span>
 <span class="fc" id="L100">            String value = line.substring(eq + 1);</span>
@@ -119,17 +119,17 @@ public final class PIMFileCodec {
 <span class="fc" id="L119">                name = decode(value);</span>
 <span class="fc bfc" id="L120" title="All 2 branches covered.">            } else if (key.equals(&quot;address&quot;)) {</span>
 <span class="fc" id="L121">                address = decode(value);</span>
-<span class="pc bpc" id="L122" title="1 of 2 branches missed.">            } else if (key.equals(&quot;mobile&quot;)) {</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            } else if (key.equals(&quot;mobile&quot;)) {</span>
 <span class="fc" id="L123">                mobile = decode(value);</span>
             } else {
-<span class="nc" id="L125">                throw new InvalidRecordException(&quot;Unknown field: &quot; + key);</span>
+<span class="fc" id="L125">                throw new InvalidRecordException(&quot;Unknown field: &quot; + key);</span>
             }
 <span class="fc" id="L127">        }</span>
-<span class="pc bpc" id="L128" title="2 of 4 branches missed.">        if (id == null || id.trim().isEmpty()) {</span>
-<span class="nc" id="L129">            throw new InvalidRecordException(&quot;id is missing&quot;);</span>
+<span class="pc bpc" id="L128" title="1 of 4 branches missed.">        if (id == null || id.trim().isEmpty()) {</span>
+<span class="fc" id="L129">            throw new InvalidRecordException(&quot;id is missing&quot;);</span>
         }
-<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (type == null) {</span>
-<span class="nc" id="L132">            throw new InvalidRecordException(&quot;type is missing&quot;);</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (type == null) {</span>
+<span class="fc" id="L132">            throw new InvalidRecordException(&quot;type is missing&quot;);</span>
         }
 <span class="fc bfc" id="L134" title="All 2 branches covered.">        if (type.equals(&quot;NOTE&quot;)) {</span>
 <span class="fc" id="L135">            return new Note(id, requireText(text, &quot;text&quot;));</span>
@@ -157,8 +157,8 @@ public final class PIMFileCodec {
     }
 
     private static LocalDateTime requireTime(LocalDateTime value, String field) {
-<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (value == null) {</span>
-<span class="nc" id="L161">            throw new InvalidRecordException(field + &quot; is missing&quot;);</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L161">            throw new InvalidRecordException(field + &quot; is missing&quot;);</span>
         }
 <span class="fc" id="L163">        return value;</span>
     }
@@ -184,8 +184,8 @@ public final class PIMFileCodec {
         try {
 <span class="fc" id="L185">            return new String(Base64.getDecoder().decode(value),</span>
                     StandardCharsets.UTF_8);
-<span class="nc" id="L187">        } catch (IllegalArgumentException ex) {</span>
-<span class="nc" id="L188">            throw new InvalidRecordException(&quot;Invalid base64 value&quot;);</span>
+<span class="fc" id="L187">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L188">            throw new InvalidRecordException(&quot;Invalid base64 value&quot;);</span>
         }
     }
 }

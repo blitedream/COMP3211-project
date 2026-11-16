@@ -9,17 +9,8 @@ import java.util.List;
 public final class ModelCoreTest {
     private static final LocalDateTime T1 = LocalDateTime.of(2026, 10, 1, 9, 0);
     private static final LocalDateTime T2 = LocalDateTime.of(2026, 10, 2, 9, 0);
-    private static int passed;
 
-    public static void main(String[] args) {
-        testCreateAllTypes();
-        testRejectInvalidCreation();
-        testUpdateAllTypes();
-        testUpdateFailureIsAtomic();
-        testImportedIdsAndSnapshots();
-        testMissingAndWrongType();
-        System.out.println("Model core tests passed: " + passed);
-    }
+    public static void main(String[] args) { TestSupport.runSuite(ModelCoreTest.class); }
 
     /** US1-US5: all four PIR types retain required data and distinct IDs. */
     private static void testCreateAllTypes() {
@@ -37,7 +28,6 @@ public final class ModelCoreTest {
                 event.getId(), contact.getId())).size() == 4, "unique IDs");
         check(model.listRecords().equals(Arrays.<PIR>asList(note, task, event, contact)),
                 "insertion order");
-        passed++;
     }
 
     /** US2-US5: invalid required fields do not add a PIR. */
@@ -49,7 +39,6 @@ public final class ModelCoreTest {
         expect(InvalidRecordException.class,
                 () -> model.createContact("Ada", "", "123"));
         check(model.listRecords().isEmpty(), "invalid records were not added");
-        passed++;
     }
 
     /** US6: each PIR can be modified without changing its type or ID. */
@@ -69,7 +58,6 @@ public final class ModelCoreTest {
         check(model.getRecord(task.getId()).getId().equals(task.getId()), "stable ID");
         check(model.getRecord(task.getId()).getType() == RecordType.TASK, "stable type");
         check(task.getDescription().equals("Old"), "original object is immutable");
-        passed++;
     }
 
     /** US6: a rejected update leaves the existing PIR unchanged. */
@@ -81,7 +69,6 @@ public final class ModelCoreTest {
         expect(InvalidRecordException.class,
                 () -> model.updateEvent(event.getId(), "New", T2, null));
         check(model.getRecord(event.getId()) == event, "failed update did not replace record");
-        passed++;
     }
 
     /** Stable IDs support future .pim loading; snapshots cannot mutate the model. */
@@ -93,7 +80,6 @@ public final class ModelCoreTest {
         List<PIR> snapshot = model.listRecords();
         expect(UnsupportedOperationException.class, () -> snapshot.clear());
         check(model.listRecords().size() == 1, "model remained unchanged");
-        passed++;
     }
 
     /** Unknown IDs and updates through the wrong PIR type report clear errors. */
@@ -106,7 +92,28 @@ public final class ModelCoreTest {
         expect(InvalidRecordException.class,
                 () -> model.updateTask(note.getId(), "Wrong", T1));
         check(model.getRecord(note.getId()) == note, "wrong-type update is atomic");
-        passed++;
+    }
+
+    /** NFR-02: public import boundaries reject missing collections or records. */
+    private static void testNullImportCollection() {
+        expect(InvalidRecordException.class, () -> new PIMModel(null));
+    }
+    /** FR-01: an invalid add does not change the existing collection. */
+    private static void testNullRecord() {
+        PIMModel model = new PIMModel();
+        Note note = model.createNote("keep");
+        expect(InvalidRecordException.class, () -> model.addRecord(null));
+        check(model.listRecords().equals(Arrays.<PIR>asList(note)), "null add preserves collection");
+    }
+    /** FR-01: unsupported extensions cannot enter the four-type collection. */
+    private static void testUnsupportedRecord() {
+        PIMModel model = new PIMModel();
+        PIR unsupported = new PIR("custom") {
+            public RecordType getType() { return RecordType.NOTE; }
+            public String toDetailString() { return "custom"; }
+        };
+        expect(InvalidRecordException.class, () -> model.addRecord(unsupported));
+        check(model.listRecords().isEmpty(), "unsupported type not added");
     }
 
     private static void check(boolean condition, String description) {

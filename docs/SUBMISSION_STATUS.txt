@@ -1,22 +1,9 @@
-Current integration status (15 November 2026)
+Current status: 16 November 2026
 
-Blank/whitespace-only IDs are rejected for print/update/delete at all collection sizes.
-Core (6), search (7), persistence (9) test groups and CLI checks pass.
-Model unit-test line coverage is 395/411 (96.11%); CLI checks are excluded.
+Non-video requirements audited; SRS 1.2, design/manuals and Canva updated.
+56 model cases + CLI checks passed. Model line coverage 428/431 (99.30%);
+branch coverage 257/268 (95.90%). See FINAL_ACCEPTANCE.txt for evidence and limits.
 
-Updated formal submission documents
-- SRS Word/PDF version 1.0 includes the Preface, readership, dated Git-based history,
-  change rationale and explicit blank-ID behavior; both are synchronized.
-- Requirements_Coverage.pdf lists every US, FR and NFR with implementation/test evidence.
-- docs/final/02_Design.pdf includes architecture, component relationships, record inheritance,
-  search/update sequence, state and all explicitly declared public/protected application APIs.
-- docs/final/03_User_Manual.pdf includes the complete search syntax and field reference;
-  it does not require B_search_design.md in the submission ZIP.
-- Rebuild PDFs with tools/build_submission_docs.py; tools/document_details.py holds
-  the consolidated design/coverage content. Regenerate coverage first.
-
-Remaining group tasks
-- Record both required MP4 videos and complete the official Honour Declaration with
-  agreed contributions and accurate AI disclosure, including this repair/document work.
-- Confirm the final presentation PDF agrees with the actual recording.
-- Run make_submission.ps1 only after the required declaration and recordings exist.
+Remaining: two MP4 recordings and official Honour Declaration, then final ZIP.
+Rebuild PDFs with tools/build_submission_docs.py. Edit the current SRS DOCX directly;
+do not rerun the historical build_srs_docx.py over it.

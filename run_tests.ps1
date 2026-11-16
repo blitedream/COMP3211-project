@@ -14,4 +14,6 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & java -cp "$mainOut;$testOut" model.SearchTest
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & java -cp "$mainOut;$testOut" model.PersistenceTest
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& java -cp "$mainOut;$testOut" model.AtomicSaveTest
 exit $LASTEXITCODE
