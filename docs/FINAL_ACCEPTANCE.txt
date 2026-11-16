@@ -30,7 +30,8 @@ old destination bytes and assert cleanup. User/developer manuals reflect actual 
 Current revision compiled and passed on Windows with Temurin JDK 21.0.3 and
 Azul Zulu JDK 8u512 (1.8.0_512-b09), using Java 8 target bytecode. The JDK 8
 archive was downloaded from Azul's official CDN and its SHA-256 checked against
-the official package metadata; it stays under ignored build/java8-verification.
+the official package metadata. The temporary archive and JDK were removed after
+verification; metadata and results remain under build/java8-verification.
 The JDK 8 run used the unpacked preview archive in a path with Chinese and spaces.
 No system Java installation or persistent PATH setting was changed.
 
@@ -54,13 +55,14 @@ Eight-page Canva deck retains the three required requirements examples, architec
 record inheritance and testing lesson. Page 6 explains boundaries and trade-offs.
 Page 8 shows an existing file, injected partial-write failure, byte-equality/cleanup
 assertions and measured coverage. Import spacing/labels repaired in Canva. Notes and
-local speaker script updated. Final PDF exported from Canva and copied byte-for-byte
-to presentation_final/PIM_Presentation.pdf and docs/final/05_Presentation.pdf.
+local speaker script updated. The final Canva export is docs/final/05_Presentation.pdf.
+The identical duplicate in presentation_final was removed during project cleanup.
 
 Document QA: SRS DOCX rendered through Word; formal PDFs rendered and reviewed.
 Updated design, developer manual and both root reports were regenerated and rendered;
 changed pages were visually reviewed. Formal PDFs have no empty pages. The numbered
-SRS requirements and Canva deck were preserved. Both presentation PDF copies are byte-identical.
+SRS requirements and Canva deck were preserved. Presentation copies were checked
+byte-for-byte before consolidating them into the single final PDF.
 
 Packaging: make_submission.ps1 -Preview creates a clearly labelled incomplete archive
 with NOT_FOR_SUBMISSION.txt; it never pretends that videos or the declaration exist.

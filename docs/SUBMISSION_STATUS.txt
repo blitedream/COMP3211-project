@@ -1,9 +1,12 @@
-Current status: 16 November 2026
+Current status: 17 November 2026
 
 Non-video requirements audited; SRS 1.2, design/manuals and Canva updated.
-56 model cases + CLI checks passed. Model line coverage 428/431 (99.30%);
+56 model cases + 3 reporter checks + CLI checks passed on Java 8 and Java 21.
+Model line coverage 428/431 (99.30%);
 branch coverage 257/268 (95.90%). See FINAL_ACCEPTANCE.txt for evidence and limits.
 
 Remaining: two MP4 recordings and official Honour Declaration, then final ZIP.
-Rebuild PDFs with tools/build_submission_docs.py. Edit the current SRS DOCX directly;
-do not rerun the historical build_srs_docx.py over it.
+Rebuild PDFs with tools/build_submission_docs.py after regenerating coverage.
+Edit the current SRS DOCX directly. The canonical Canva PDF is
+docs/final/05_Presentation.pdf; the current rehearsal script is
+presentation_final/Speaker_Scripts_Revised.txt.

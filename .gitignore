@@ -4,11 +4,6 @@ tmp/
 build/
 .idea/
 
-# Local presentation review images and duplicate archives
-presentation_v2/qa/
-presentation_v2/*.jpg
-presentation_v2/*.zip
-
 # Submission artefacts that stay local (recorded videos, signed declaration)
 video/*.mp4
 Honour_Declaration.pdf

@@ -157,3 +157,6 @@ the group must review these before submission.
 
 The [recording guide](docs/final/06_Recording_Guide.pdf) and rehearsal script in
 `presentation_final/` are for group preparation and are not included in the ZIP.
+The single maintained presentation PDF is `docs/final/05_Presentation.pdf`.
+Save new Canva exports there. Current document builders are in `tools/`;
+old presentation drafts and obsolete generators have been removed.
