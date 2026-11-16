@@ -5,7 +5,7 @@ eight-page Canva PDF export. Honour/video work remains human. This is a technica
 acceptance record, not an instructor's grade or an assertion of defect-free software.
 
 1 SRS (teacher weight 6): PASS for required coverage and consistency checks.
-Version 1.2 has the six required chapters, US1-US11, FR-01-FR-12 and NFR-01-NFR-04.
+Version 1.3 has the six required chapters, US1-US11, FR-01-FR-12 and NFR-01-NFR-04.
 NFR-03 specifies Error: plus nonempty reason, no stack trace, unchanged data and
 successful next command. FR-11 specifies safe staged atomic saving and limits.
 Acceptance scenarios identify observable outcomes and executable evidence.
@@ -103,6 +103,30 @@ Evidence: build/demo-video/cli-session.json and build/demo-video/verification.js
 This verifies content and media integrity; it is not an instructor's acceptance.
 The group chose to record the demo themselves. The automated draft is archived at
 build/demo-video/automated_demo_unused.mp4 and is excluded from submission.
+
+Terminal usability update: the command-line interface now offers ANSI dark panels,
+colored messages, a compact list, clear, an unsaved-changes indicator and help
+examples using current record numbers. ConsoleView formats output only. PIMCli
+resolves session numbers without renumbering after search, deletion or load;
+removed references are not reused for another stored ID. Numeric-ID collisions
+are rejected with explicit #NUMBER/id:VALUE choices. Full IDs and the .pim
+format are unchanged. Plain mode remains available for redirected output.
+Expanded CLI checks cover reference identity, failed-load preservation, collisions,
+styled output, escaped stored controls and plain fallback. The latest source
+passed all 56 model cases, 3 reporter checks and CLI checks on Java 8u512 and
+Java 21.0.3. Model coverage remains 428/431 lines and 257/268 branches.
+The native Windows launcher was exercised in a 120-column terminal. Loading
+the user's existing demo.pim was read-only; its SHA-256 remained unchanged.
+SRS 1.3, design, manuals, recording guide and requirement coverage were updated;
+all seven Word-rendered SRS pages and changed formal PDF pages were reviewed.
+The preview ZIP includes ConsoleView; its five course PDFs match the source.
+A fresh extraction in a Chinese/space path passed short-number update/save/load,
+fresh-process loading, plain-output and Git Bash launch checks. The normal
+packager still rejects missing human deliverables. Temporary JDK and packaging
+copies were moved to the Recycle Bin; verification logs remain locally under
+build/ui-verification (java21-checks.log, java8/test-results.log, package-result.json,
+unpacked-cli.log, unpacked-restart.log, bash-launch.log and submission-guard.log).
+No domain model source or saved user data was changed by this update.
 
 Remaining: record the demo, add and review subtitles, save as demo.mp4 <=4 minutes;
 record presentation.mp4 <=5 minutes with

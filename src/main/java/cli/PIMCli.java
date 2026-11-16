@@ -11,13 +11,44 @@ import java.util.*;
 public final class PIMCli {
     private PIMModel model = new PIMModel();
     private final PrintWriter out;
+    private final ConsoleView view;
+    private boolean unsaved;
+    private final Map<String, Integer> numbers = new LinkedHashMap<String, Integer>();
+    private final Map<Integer, String> idsByNumber = new LinkedHashMap<Integer, String>();
+    private int nextNumber = 1;
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm").withResolverStyle(ResolverStyle.STRICT);
-    public PIMCli(PrintWriter out) { this.out = out; }
+    public PIMCli(PrintWriter out) { this(out, false); }
+    PIMCli(PrintWriter out, boolean color) {
+        this.out = out;
+        this.view = color ? new ConsoleView(out) : null;
+    }
     public static void main(String[] args) throws IOException {
-        PIMCli cli = new PIMCli(new PrintWriter(new OutputStreamWriter(System.out, "UTF-8"), true));
+        boolean color = System.console() != null && System.getenv("NO_COLOR") == null
+                && !"dumb".equals(System.getenv("TERM"));
+        for (String arg : args) {
+            if (arg.equals("--plain")) color = false;
+            else if (arg.equals("--color")) color = true;
+            else throw new IllegalArgumentException("Usage: cli.PIMCli [--plain|--color]");
+        }
+        PIMCli cli = new PIMCli(new PrintWriter(new OutputStreamWriter(System.out, "UTF-8"), true), color);
         cli.run(new BufferedReader(new InputStreamReader(System.in, "UTF-8")));
     }
     public void run(BufferedReader input) throws IOException {
+        if (view != null) view.welcome();
+        else welcomePlain();
+        try {
+            String line;
+            while (true) {
+                if (view != null) view.prompt(model.listRecords().size(), unsaved);
+                else { out.print("pim> "); out.flush(); }
+                line = input.readLine();
+                if (line == null || !execute(line)) break;
+            }
+        } finally {
+            if (view != null) { out.print(ConsoleView.RESET); out.flush(); }
+        }
+    }
+    private void welcomePlain() {
         out.println("============================================================");
         out.println("  PIM | Personal Information Manager");
         out.println("  Notes - Tasks - Events - Contacts");
@@ -25,18 +56,14 @@ public final class PIMCli {
         out.println("Type commands at pim>. Quick start:");
         out.println("  create note \"Buy milk\"");
         out.println("  print all");
+        out.println("  list     (show short record numbers)");
+        out.println("  print 1  (use a number from list)");
         out.println("  search type = note");
         out.println("  save \"my-records.pim\"");
         out.println("Type help for all commands, or quit to exit.");
         out.println("Save before quitting: changes are not saved automatically.");
         out.println("To resume saved work: load \"my-records.pim\"");
         out.println();
-        String line;
-        while (true) {
-            out.print("pim> "); out.flush();
-            line = input.readLine();
-            if (line == null || !execute(line)) break;
-        }
     }
     /** Execute one command; false requests exit. Expected errors leave the loop usable. */
     public boolean execute(String line) {
@@ -51,27 +78,50 @@ public final class PIMCli {
             List<String> a = tokens(line);
             switch (command) {
                 case "help": count(a, 1); help(); break;
-                case "quit": case "exit": count(a, 1); out.println("Goodbye."); return false;
+                case "list": count(a, 1); list(); break;
+                case "clear": count(a, 1); if (view != null) view.welcome(); else welcomePlain(); break;
+                case "quit": case "exit":
+                    count(a, 1);
+                    if (view != null && unsaved) view.hint("Unsaved changes were not written to a file.");
+                    out.println("Goodbye."); out.flush(); return false;
                 case "create": create(a); break;
                 case "update": update(a); break;
                 case "print":
                     count(a, 2);
                     if (a.get(1).equalsIgnoreCase("all")) show(model.listRecords());
-                    else out.println(model.getRecord(resolveId(a.get(1))).toDetailString());
+                    else showOne(model.getRecord(resolveId(a.get(1))));
                     break;
                 case "delete": {
                     count(a, 2);
                     String id = resolveId(a.get(1));
+                    int number = numberOf(model.getRecord(id));
                     model.deleteRecord(id);
-                    out.println("Deleted " + id);
+                    unsaved = true;
+                    if (view != null) view.message("Deleted record #" + number + ".");
+                    else out.println("Deleted " + id);
                     break;
                 }
-                case "save": count(a, 2); PIMFileCodec.save(model, file(a.get(1))); out.println("Saved."); break;
-                case "load": count(a, 2); PIMModel loaded = PIMFileCodec.load(file(a.get(1))); model = loaded; out.println("Loaded " + model.listRecords().size() + " record(s); replaced current collection."); break;
+                case "save":
+                    count(a, 2); PIMFileCodec.save(model, file(a.get(1))); unsaved = false;
+                    if (view != null) view.message("Saved " + model.listRecords().size() + " record(s) to " + a.get(1) + ".");
+                    else out.println("Saved.");
+                    break;
+                case "load":
+                    count(a, 2);
+                    PIMModel loaded = PIMFileCodec.load(file(a.get(1)));
+                    model = loaded;
+                    unsaved = false;
+                    for (PIR record : model.listRecords()) numberOf(record);
+                    if (view != null) {
+                        view.message("Loaded " + model.listRecords().size() + " record(s); replaced current collection.");
+                        list();
+                    } else out.println("Loaded " + model.listRecords().size() + " record(s); replaced current collection.");
+                    break;
                 default: throw new IllegalArgumentException("Unknown command. Type help.");
             }
         } catch (IllegalArgumentException | NoSuchElementException | IOException | DateTimeException e) {
-            out.println("Error: " + e.getMessage());
+            if (view != null) view.error(e.getMessage());
+            else out.println("Error: " + e.getMessage());
         }
         out.flush(); return true;
     }
@@ -99,7 +149,12 @@ public final class PIMCli {
             case "contact": count(a,5); r=model.createContact(a.get(2),a.get(3),a.get(4)); break;
             default: throw new IllegalArgumentException("Unknown record type");
         }
-        out.println("Created " + r.getId());
+        unsaved = true;
+        if (view != null) {
+            view.message("Created " + r.getType().toString().toLowerCase(Locale.ROOT) + " #" + numberOf(r) + ".");
+            view.hint("ID: " + r.getId());
+            view.hint("View details: print " + numberOf(r));
+        } else out.println("Created " + r.getId() + "  [#" + numberOf(r) + "]");
     }
     /** Partial update preserves other fields, stable ID and type. */
     private void update(List<String> a) {
@@ -130,7 +185,11 @@ public final class PIMCli {
             }
             default: throw new IllegalArgumentException("Unsupported type");
         }
-        out.println("Updated " + r.getId());
+        unsaved = true;
+        if (view != null) {
+            view.message("Updated record #" + numberOf(r) + ".");
+            showOne(model.getRecord(r.getId()));
+        } else out.println("Updated " + r.getId());
     }
     private static void allowed(Map<String,String> fields,String... names) {
         for(String key:fields.keySet()) if(!Arrays.asList(names).contains(key)) throw new IllegalArgumentException("Invalid field for this type: "+key);
@@ -139,8 +198,43 @@ public final class PIMCli {
         if(a.size()!=n) throw new IllegalArgumentException("Wrong number of arguments. Type help.");
     }
     private void show(List<PIR> records) {
-        out.println(records.size()+" record(s)");
-        for(PIR r:records) out.println(r.toDetailString());
+        if (view != null) view.heading(records.size() + " record(s)");
+        else out.println(records.size()+" record(s)");
+        for(PIR r:records) {
+            if (view == null) out.println("Record #" + numberOf(r));
+            showOne(r);
+        }
+    }
+    private void showOne(PIR record) {
+        if (view != null) view.record(record, numberOf(record));
+        else out.println(record.toDetailString());
+    }
+    private void list() {
+        List<PIR> records = model.listRecords();
+        if (view != null) {
+            view.heading("YOUR RECORDS  /  " + records.size() + " record(s)");
+            for (PIR record : records) view.summary(record, numberOf(record));
+            view.hint(records.isEmpty() ? "Start with: create note \"Buy milk\""
+                    : "Use a displayed number: print " + numberOf(records.get(0)) + "  |  help for update examples");
+        } else {
+            out.println(records.size() + " record(s)");
+            for (PIR record : records) {
+                String[] detail = record.toDetailString().split("\n", -1);
+                out.println("#" + numberOf(record) + "  " + record.getType()
+                        + "  " + (detail.length > 1 ? detail[1] : ""));
+            }
+            out.println("Use print NUMBER for full details. Numbers stay with their records during this session.");
+        }
+    }
+    /** Session references never shift after search/deletion or get reused for another ID. */
+    private int numberOf(PIR record) {
+        Integer number = numbers.get(record.getId());
+        if (number == null) {
+            number = nextNumber++;
+            numbers.put(record.getId(), number);
+            idsByNumber.put(number, record.getId());
+        }
+        return number;
     }
     /**
      * Accept a full ID or any unique prefix and return the canonical full ID.
@@ -150,6 +244,33 @@ public final class PIMCli {
         if (id == null || id.trim().isEmpty()) {
             throw new IllegalArgumentException("ID must be nonblank");
         }
+        if (id.startsWith("id:")) return resolveCanonicalId(id.substring(3));
+        if (id.matches("#?[0-9]+")) {
+            String digits = id.startsWith("#") ? id.substring(1) : id;
+            int number;
+            try { number = Integer.parseInt(digits); }
+            catch (NumberFormatException ex) { throw new IllegalArgumentException("Record number is too large. Type list to see available numbers."); }
+            String alias = idsByNumber.get(number);
+            String exact = null;
+            if (!id.startsWith("#")) {
+                for (PIR record : model.listRecords()) if (record.getId().equals(id)) exact = id;
+            }
+            if (alias != null && exact != null && !alias.equals(exact)) {
+                throw new IllegalArgumentException("Ambiguous reference '" + id + "': use #" + number + " for the displayed number or id:" + id + " for the stored ID.");
+            }
+            if (exact != null) return exact;
+            if (alias != null) {
+                for (PIR record : model.listRecords()) if (record.getId().equals(alias)) return alias;
+            }
+            throw new IllegalArgumentException("No current record #" + number + ". Type list to see available numbers.");
+        }
+        if (id.equalsIgnoreCase("TASK_ID") || id.equalsIgnoreCase("CONTACT_ID") || id.equalsIgnoreCase("ID")) {
+            throw new IllegalArgumentException(id + " is an example placeholder. Type list, then use a displayed number, for example: print 1");
+        }
+        return resolveCanonicalId(id);
+    }
+    private String resolveCanonicalId(String id) {
+        if (id.trim().isEmpty()) throw new IllegalArgumentException("ID must be nonblank");
         String needle = id.toLowerCase(Locale.ROOT);
         List<String> matches = new ArrayList<String>();
         for (PIR record : model.listRecords()) {
@@ -163,11 +284,37 @@ public final class PIMCli {
                 + matches.size() + " records match; type more characters");
     }
     private void help() {
-        out.println("create note TEXT\ncreate task DESCRIPTION DEADLINE\ncreate event DESCRIPTION START ALARM\ncreate contact NAME ADDRESS MOBILE\nupdate ID FIELD VALUE [FIELD VALUE ...]\nsearch CRITERIA\nprint ID|all\ndelete ID\nsave FILE.pim\nload FILE.pim\nhelp\nquit");
-        out.println("Quote values containing spaces. Time: yyyy-MM-dd HH:mm. Fields: text, description, deadline, start, alarm, name, address, mobile.");
-        out.println("ID may be the full 36-character ID or any unique prefix (8 characters usually suffice).");
-        out.println("Search example: (type = task || type = event) && description contains \"report\"");
-        out.println("Save overwrites its file. Load replaces all records only on success. Quit/EOF does not save automatically.");
+        List<String> lines = new ArrayList<String>(Arrays.asList(
+                "create note TEXT", "create task DESCRIPTION DEADLINE",
+                "create event DESCRIPTION START ALARM", "create contact NAME ADDRESS MOBILE",
+                "list                    Short record numbers and summaries",
+                "print NUMBER|all        Full details, including the stored ID",
+                "update NUMBER FIELD VALUE [FIELD VALUE ...]", "delete NUMBER",
+                "search CRITERIA", "save FILE.pim", "load FILE.pim", "clear", "help", "quit",
+                "", "Quote values containing spaces. Time: yyyy-MM-dd HH:mm.",
+                "Fields: text, description, deadline, start, alarm, name, address, mobile.",
+                "Use a number from list (1 or #1). Numbers never move to another record during this session.",
+                "Numbers are not saved. After restarting, use list to see the current numbers.",
+                "Full IDs and unique non-numeric prefixes still work; id:VALUE forces stored-ID lookup.",
+                "Save overwrites its file. Load replaces records only on success. Quit/EOF does not save."));
+        if (!model.listRecords().isEmpty()) {
+            lines.add(""); lines.add("EXAMPLES FOR YOUR CURRENT RECORDS");
+            Set<RecordType> shown = new HashSet<RecordType>();
+            for (PIR record : model.listRecords()) {
+                if (!shown.add(record.getType())) continue;
+                String change;
+                switch (record.getType()) {
+                    case TASK: change = "deadline \"2026-11-20 18:00\""; break;
+                    case EVENT: change = "description \"Updated meeting\""; break;
+                    case CONTACT: change = "name \"Alice\""; break;
+                    default: change = "text \"Buy tea\"";
+                }
+                lines.add("update " + numberOf(record) + " " + change);
+            }
+        }
+        lines.add("search (type = task || type = event) && description contains \"report\"");
+        if (view != null) view.help(lines);
+        else for (String line : lines) out.println(line);
     }
     /** Double quotes group arguments; doubled quotes inside a quoted value mean a literal quote. Backslashes stay literal. */
     private static List<String> tokens(String line) {

@@ -1,6 +1,6 @@
 from pathlib import Path
 import re, xml.etree.ElementTree as ET, zipfile, html, argparse
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Preformatted, KeepInFrame
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Preformatted, KeepInFrame, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -39,7 +39,9 @@ def md(text):
    while i<len(lines) and not lines[i].startswith('```'):code.append(lines[i]);i+=1
    i+=1
    if line=='```mermaid':continue
-   for row in code:result.append(Preformatted(row,styles['CodeSmall'],maxLineLength=88))
+   block=[Preformatted(row,styles['CodeSmall'],maxLineLength=88) for row in code]
+   if len(code)<=20:result.append(KeepTogether(block))
+   else:result.extend(block)
   elif line.startswith('|'):
    rows=[line]
    while i<len(lines) and lines[i].strip().startswith('|'):rows.append(lines[i].strip());i+=1
@@ -63,10 +65,10 @@ def diagram(kind):
   d.add(Polygon([xx,yy,xx-u*math.cos(a-.4),yy-u*math.sin(a-.4),xx-u*math.cos(a+.4),yy-u*math.sin(a+.4)],fillColor=colors.white if hollow else colors.HexColor('#567086'),strokeColor=colors.HexColor('#567086')))
   if label:d.add(String(min(x,xx)+4,(y+yy)/2+5,label,fontSize=8))
  if kind=='architecture':
-  box(5,165,110,60,'Terminal','Input and output');box(170,165,170,60,'PIMCli','View and controller');box(170,55,170,70,'PIMModel','Collection and updates');box(370,145,135,65,'PIRSearch','Criteria parser');box(370,30,135,65,'PIMFileCodec','File serialization')
+  box(5,165,110,60,'Terminal','Input and output');box(170,165,170,60,'PIMCli','Commands + ConsoleView');box(170,55,170,70,'PIMModel','Collection and updates');box(370,145,135,65,'PIRSearch','Criteria parser');box(370,30,135,65,'PIMFileCodec','File serialization')
   arrow(115,195,170,195);arrow(255,165,255,125);arrow(340,90,370,170);arrow(330,165,400,95)
  elif kind=='components':
-  box(5,165,135,65,'PIMCli','model: PIMModel');box(190,165,140,65,'PIMModel','records: Map<String,PIR>');box(380,165,125,65,'PIRSearch','search(records, criteria)')
+  box(5,165,135,65,'PIMCli','model: PIMModel\nview: ConsoleView');box(190,165,140,65,'PIMModel','records: Map<String,PIR>');box(380,165,125,65,'PIRSearch','search(records, criteria)')
   box(190,40,140,65,'PIR abstract','id: String; four subtypes');box(5,40,135,65,'PIMFileCodec','save / load')
   arrow(140,195,190,195,'owns 1');arrow(330,195,380,195,'delegates');arrow(260,165,260,105,'holds 0..*');arrow(70,165,70,105,'calls');arrow(140,70,190,70,'reads/builds')
   d.add(String(170,12,'Search reads PIR getters; codec reconstructs typed records.',fontSize=9))
@@ -85,6 +87,11 @@ def diagram(kind):
   for x in [120,250,380]:arrow(x,95,x+10,95)
   d.add(String(5,35,'Failure before replacement: preserve old destination; remove staged file.',fontSize=9))
   d.add(String(5,16,'Unsupported atomic replacement: report IOException; no unsafe fallback.',fontSize=9))
+ elif kind=='terminal':
+  d=Drawing(510,120)
+  box(5,35,220,70,'PIMCli','commands; stable session references\nplain output or styled output')
+  box(300,35,205,70,'ConsoleView','ANSI panels, messages and summaries\nno model mutation')
+  arrow(225,70,300,70,'formats')
  else:
   d=Drawing(510,490)
   for title,x in [('User',40),('PIMCli',180),('PIMModel',325),('PIRSearch',460)]:
@@ -165,6 +172,6 @@ if not selected or '05_Presentation.pdf' in selected:
  if not (OUT/'05_Presentation.pdf').is_file():
   raise FileNotFoundError('Export the Canva deck to docs/final/05_Presentation.pdf first.')
  print('Preserved docs/final/05_Presentation.pdf (Canva export).')
-build(OUT/'06_Recording_Guide.pdf','PIM Recording and Submission Guide',section('System demonstration','Target 3 minutes 40 seconds: start (20 seconds); create four types (50); print and copy ID (20); search and update (50); save, restart and load (45); invalid input and delete (35). Record the actual program as MP4. This guide is not the video.')+section('Presentation recording','Use the reviewed eight-slide deck: A pages 1-2, B pages 3-4, C pages 5-6, D pages 7-8. Target A/B at 70 seconds each and C/D at 75 seconds each (4 minutes 50 seconds including ID displays), leaving 10 seconds for transitions. Rehearsal targets are not measured durations. Each presenter must speak for at least one minute. All presenters show faces and student IDs at the beginning; the current presenter remains visible. A/B/C/D labels are speaking sections, not contribution percentages.')+section('Example demonstration','Create a task called Finish report, search type = task && description contains "report", copy its ID, and update only deadline. Print it to show the description remains. Save demo.pim, restart and load it. Try an unknown ID or invalid date, then print all to show recovery.')+section('Human completion','Review group facts, record the two MP4 videos, agree contributions and complete the official Honour Declaration with signatures and all required declarations completed. Add these materials before final submission. Confirm names, student IDs, signatures and contribution percentages before submission.'))
+build(OUT/'06_Recording_Guide.pdf','PIM Recording and Submission Guide',section('System demonstration','Target 3 minutes 40 seconds: start (20 seconds); create four types (50); list and inspect a number (20); search and update (50); save, restart and load (45); invalid input and delete (35). Record the actual program as MP4. This guide is not the video.')+section('Presentation recording','Use the reviewed eight-slide deck: A pages 1-2, B pages 3-4, C pages 5-6, D pages 7-8. Target A/B at 70 seconds each and C/D at 75 seconds each (4 minutes 50 seconds including ID displays), leaving 10 seconds for transitions. Rehearsal targets are not measured durations. Each presenter must speak for at least one minute. All presenters show faces and student IDs at the beginning; the current presenter remains visible. A/B/C/D labels are speaking sections, not contribution percentages.')+section('Example demonstration','Create a task called Finish report, search type = task && description contains "report", use its number from list, and update only deadline. Print it to show the description remains. Save demo.pim, restart and load it. Try an unknown ID or invalid date, then print all to show recovery.')+section('Human completion','Review group facts, record the two MP4 videos, agree contributions and complete the official Honour Declaration with signatures and all required declarations completed. Add these materials before final submission. Confirm names, student IDs, signatures and contribution percentages before submission.'))
 print(f'Generated {len(generated)} PDFs: {", ".join(generated)}. Model line coverage: {pct:.2f}%')
 

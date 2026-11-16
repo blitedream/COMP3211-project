@@ -12,6 +12,11 @@ From PowerShell in the repository root:
 .\test_all.ps1
 ```
 The first command compiles and launches the interactive app. The second compiles all sources and runs 56 model cases, three reporter checks and the CLI integration checks. No Maven or downloaded runtime dependencies are needed.
+The Windows launcher enables ANSI output for the child process when supported,
+passes the terminal width, and restores the previous console mode afterwards.
+Use `run_pim.ps1 -Plain` for plain text. The Java entry point accepts `--plain`
+and `--color`; setting `NO_COLOR` disables automatic color. The Bash launcher
+also passes the available terminal width. ConsoleView handles formatting only.
 
 ## User guide
 Enter commands at `pim>`, not directly in PowerShell. Commands and type names are case-insensitive. Quote arguments containing spaces with double quotes. Within quoted command arguments, two double quotes represent one literal quote. Backslashes are literal, including Windows paths. Dates use exactly `yyyy-MM-dd HH:mm`, with valid calendar dates and 24-hour times. Times have no timezone; model detail output uses ISO `T` between date and time.
@@ -28,14 +33,37 @@ load "my records.pim"
 help
 quit
 ```
-Creation prints a unique ID. The commands below accept the full ID or any unique prefix of it (8 characters usually suffice):
+Creation assigns a short record number. Use `list` to see the current numbers.
+The examples below assume that list shows a note as #1 and a task as #2; use the
+numbers shown for your own records. `help` prints update examples with real
+numbers from the current collection.
 
 ```text
-print ID
-update ID text "New note text"
-update ID description "Revised task" deadline "2026-11-21 18:00"
-delete ID
+list
+print 1
+update 1 text "New note text"
+update 2 description "Revised task" deadline "2026-11-21 18:00"
+delete 1
 ```
+Both `2` and `#2` select record #2. Numbers remain attached to the same stored ID
+through search, deletion and loading within this session; deleted numbers are
+not reused for different IDs. Successful loading preserves known references and
+assigns new numbers to newly encountered IDs. A failed load changes neither data
+nor references. Numbers are not stored in the file, so use `list` again after
+restarting. Original stable IDs and existing .pim files remain compatible.
+
+Full IDs and unique non-numeric ID prefixes still work. Use `id:VALUE` to force
+stored-ID lookup, including a numeric prefix. If a numeric stored ID conflicts
+with a displayed number, the command is rejected; use `#NUMBER` or `id:VALUE`
+to choose explicitly. Number 0, unavailable numbers and oversized numbers fail
+without changing any records.
+
+On supported terminals, the interface shows dark panels, colored success/error
+messages, short references and an unsaved-changes indicator. `print` shows all
+stored fields and the full ID; `list` is a compact overview. `clear` redraws the
+welcome panel without changing records. Plain text remains available through
+`run_pim.ps1 -Plain`. Save and successful load clear the unsaved indicator;
+successful create/update/delete set it. Quit still does not save automatically.
 Updates accept one or more field/value pairs and preserve unspecified fields, ID and type. Allowed fields: note: text; task: description, deadline; event: description, start, alarm; contact: name, address, mobile. Duplicate or inappropriate fields are rejected. Required text cannot be blank.
 
 Print displays the ID, type and every stored field. Results start with the count; zero results is normal. Event alarms are stored data, not background notifications.
@@ -117,7 +145,7 @@ search !(type = note || type = contact)
 Save stages all bytes in the destination directory, then atomically replaces the named .pim file. If staging or replacement fails, the old file is preserved; a filesystem without atomic replacement support reports an error instead of falling back to an unsafe overwrite. The destination directory must be writable. This does not guarantee recovery from power loss or disk corruption. Load replaces the entire current collection only after a successful read. Save first if current changes are needed. Relative paths resolve from the directory where you launched the program. Quit, exit and end-of-input do not automatically save. Invalid commands, arguments, dates, IDs and files print `Error:` and allow the next command; failed updates and failed loads preserve current data.
 
 ## Design
-`cli.PIMCli` is the terminal view/controller. Its constructor accepts a PrintWriter; `run(BufferedReader)` drives the loop and may throw IOException for terminal read failures; `execute(String)` returns false for exit and handles expected command errors. The existing model owns all business rules, search and persistence. No A/B/C model files were changed.
+`cli.PIMCli` is the terminal controller and owns the session reference maps. Its public constructor accepts a PrintWriter for plain text; the package-private overload enables ConsoleView for ANSI formatting. `run(BufferedReader)` drives the loop and may throw IOException for terminal read failures; `execute(String)` returns false for exit and handles expected command errors. ConsoleView formats output and never mutates the model. The existing model owns all business rules, search and persistence. No A/B/C model files were changed.
 
 ```mermaid
 sequenceDiagram

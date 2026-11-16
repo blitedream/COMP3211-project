@@ -85,7 +85,7 @@
 
 ## 第 6 页 · 设计：架构（C，40 秒）
 
-> Our design is MVC-inspired. PIMCli combines the terminal view and controller; PIMModel owns records and delegates search. The CLI calls PIMFileCodec directly, and AtomicFileWriter stages and replaces saved files. These boundaries let us test domain rules without terminal input. Immutable replacements prevent partial updates, while ordered storage makes results predictable. Linear search is sufficient for this project scope; an index would add maintenance complexity. The trade-off is extra allocation and temporary disk space.
+> Our design is MVC-inspired. PIMCli handles commands, with ConsoleView formatting the terminal; PIMModel owns records and delegates search. The CLI calls PIMFileCodec directly, and AtomicFileWriter stages and replaces saved files. These boundaries let us test domain rules without terminal input. Immutable replacements prevent partial updates, while ordered storage makes results predictable. Linear search is sufficient for this project scope; an index would add maintenance complexity. The trade-off is extra allocation and temporary disk space.
 
 **提示**
 
@@ -130,7 +130,7 @@
 
 ## 可能被问到的问题
 
-1. **为什么用 UUID 而不是自增 ID？** 不需要维护计数器，碰撞概率很低；载入时仍检查重复 ID。命令支持唯一前缀，不用敲满 36 位。
+1. **为什么用 UUID 而不是自增 ID？** 不需要维护计数器，碰撞概率很低；载入时仍检查重复 ID。界面提供 1、2、3 这样的会话编号，完整 UUID 保存在文件中；搜索和删除不会让编号错位。重启后用 list 查看编号。
 2. **为什么使用 JUnit？** 模型测试使用 JUnit 4.13.2 的 @Test 和 JUnitCore 自动发现、执行并报告结果；失败时退出码非零。JUnit/Hamcrest 仅用于测试，应用运行时仍只依赖 Java 标准库。CLI 集成检查单独执行。
 3. **为什么 .pim 里用 Base64？** 文本可能含换行、`=`、中文，Base64 后每行一个字段，解析不会断。
 4. **99.30% 的覆盖率说明什么？** 56 项模型测试执行了 model 中的 428/431 行；CLI 和测试报告器不计入。返回值、文件内容和异常由断言检查。

@@ -48,7 +48,7 @@ requested scope and preserve the CLI and Java standard-library constraints.
 
 ## Current artifacts and editing sources
 
-- `docs/PIM_SRS.docx`: SRS v1.2 editing source. Edit this document directly.
+- `docs/PIM_SRS.docx`: SRS v1.3 editing source. Edit this document directly.
 - `tools/build_submission_docs.py` and `tools/document_details.py`: formal PDF
   generation and design detail sources (Python packages are needed only if
   regenerating documents; they are not Java application dependencies).

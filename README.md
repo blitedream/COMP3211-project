@@ -19,6 +19,8 @@ No Maven, Gradle or runtime dependency installation is needed. The JAR files in
 
 On Windows, double-click **Start_PIM.cmd** in this folder. It opens the terminal,
 compiles the source and launches the PIM prompt with quick-start examples.
+The terminal uses a dark background, colored results and record panels when ANSI
+color is supported. `list` shows easy record numbers; no UUID copying is needed.
 Keep the launcher in the project folder. A JDK is still required; missing Java
 or startup failures leave an explanation visible. No system execution-policy
 setting is changed. Files saved using relative paths are placed in this project
@@ -46,8 +48,21 @@ quit
 ```
 
 To restore those records in a later session, enter `load "my-records.pim"`.
-Creation prints a record ID. `print`, `delete` and `update` accept the full
-36-character ID or any unique prefix of it (8 characters usually suffice).
+Creation assigns a short record number. Type `list`, then use the displayed
+number in commands such as `print 2` or `update 2 deadline "2026-11-20 18:00"`.
+`#2` explicitly refers to that number. Search and deletion never renumber records;
+new records never reuse old numbers during the same session. Loading preserves
+numbers for known IDs and assigns fresh numbers to newly encountered IDs.
+Numbers are session-only: after restarting, run `list` again. The stable IDs stored
+in existing `.pim` files are unchanged. Full IDs and unique non-numeric prefixes
+still work; `id:VALUE` explicitly selects a stored ID or any unique prefix.
+If a numeric stored ID conflicts with a displayed number, PIM rejects the
+ambiguous command and explains how to choose `#NUMBER` or `id:VALUE`.
+
+Use `clear` to redraw the welcome panel. `help` includes update examples using
+your current records. The prompt indicates unsaved changes. For plain text use
+`powershell -File .\run_pim.ps1 -Plain`, or set `NO_COLOR`; Java's entry point also
+accepts `--plain` and `--color`. Redirected output uses plain text automatically.
 
 Quote arguments containing spaces. Dates use `yyyy-MM-dd HH:mm`.
 Save stages and flushes a same-directory temporary file before atomic replacement. Failed staging or unsupported replacement preserves the old destination; no unsafe fallback is used. A successful load replaces the current

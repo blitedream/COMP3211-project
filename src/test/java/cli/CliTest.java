@@ -7,6 +7,9 @@ public final class CliTest {
  public static void main(String[] args) throws Exception {
   testBlankIds();
   testErrorRecoveryContract();
+  testShortReferences();
+  testNumericIdCollision();
+  testStyledConsole();
   StringWriter text=new StringWriter(); PIMCli cli=new PIMCli(new PrintWriter(text,true));
   cli.execute("create note \"buy milk\"");
   Matcher m=Pattern.compile("Created ([a-f0-9-]+)").matcher(text.toString()); check(m.find(),"created ID"); String id=m.group(1);
@@ -93,4 +96,83 @@ public final class CliTest {
   }
  }
  private static void check(boolean value,String message) {if(!value)throw new AssertionError(message);}
+
+ /** Short numbers identify records, never positions in a filtered or shortened list. */
+ private static void testShortReferences() throws Exception {
+  StringWriter output=new StringWriter();PIMCli subject=new PIMCli(new PrintWriter(output,true));
+  Path file=Files.createTempFile("pim-reference-roundtrip-", ".pim");
+  try {
+   subject.execute("create note first");
+   subject.execute("create task report \"2026-11-19 18:00\"");
+   subject.execute("create note third");
+   String original=call(subject,output,"print 2");
+   check(original.contains("[TASK]")&&original.contains("report"),"bare short number resolves task");
+   check(call(subject,output,"print #2").equals(original),"explicit short number resolves same record");
+   check(call(subject,output,"list").contains("#2  TASK"),"list exposes usable reference");
+   check(call(subject,output,"search type = task").contains("Record #2"),"filtered result keeps original number");
+   subject.execute("save \""+file+"\"");
+   subject.execute("delete 1");subject.execute("create note fourth");
+   check(call(subject,output,"print 2").equals(original),"delete does not shift numbers");
+   check(call(subject,output,"print #1").startsWith("Error:"),"deleted number remains unavailable");
+   check(call(subject,output,"print 4").contains("fourth"),"new records do not reuse deleted numbers");
+   subject.execute("load \""+file+"\"");
+   check(call(subject,output,"print 1").contains("first"),"reloaded same ID recovers same number");
+   check(call(subject,output,"print 2").equals(original),"load retains existing reference identity");
+   check(call(subject,output,"print 4").startsWith("Error:"),"load removes absent record without remapping its number");
+   subject.execute("create note fifth");
+   check(call(subject,output,"print 5").contains("fifth"),"numbers removed by load are not reused");
+   subject.execute("update 2 deadline \"2026-11-20 18:00\"");
+   String updated=call(subject,output,"print 2");
+   check(updated.contains("report")&&updated.contains("2026-11-20T18:00"),"short-number partial update");
+   check(call(subject,output,"update #2 deadline \"2026-02-30 18:00\"").startsWith("Error:"),"invalid short-number update rejected");
+   check(call(subject,output,"print 2").equals(updated),"invalid update preserves short reference and fields");
+   Files.write(file,"invalid".getBytes("UTF-8"));
+   check(call(subject,output,"load \""+file+"\"").startsWith("Error:"),"invalid load rejected");
+   check(call(subject,output,"print 2").equals(updated),"failed load preserves aliases");
+   for(String reference:new String[]{"0","#0","#999","999999999999999999999"})
+    check(call(subject,output,"delete "+reference).startsWith("Error:"),"invalid reference fails safely: "+reference);
+   check(call(subject,output,"update TASK_ID deadline \"2026-11-20 18:00\"").contains("example placeholder"),"copying placeholder gives actionable error");
+   check(call(subject,output,"help").contains("update 2 deadline"),"help uses real task number");
+   subject.execute("delete #2");check(call(subject,output,"print 2").startsWith("Error:"),"explicit short-number deletion");
+  } finally {Files.deleteIfExists(file);}
+ }
+
+ /** Imported numeric IDs cannot silently redirect a destructive short-number command. */
+ private static void testNumericIdCollision() throws Exception {
+  Path file=Files.createTempFile("pim-numeric-id-", ".pim");
+  try {
+   model.PIMModel records=new model.PIMModel();
+   records.addRecord(new model.Note("alpha","first"));
+   records.addRecord(new model.Note("1","numeric stored ID"));
+   records.addRecord(new model.Note("123abc","numeric prefix"));
+   model.PIMFileCodec.save(records,file);
+   StringWriter output=new StringWriter();PIMCli subject=new PIMCli(new PrintWriter(output,true));
+   subject.execute("load \""+file+"\"");
+   check(call(subject,output,"delete 1").contains("Ambiguous reference"),"collision refuses destructive action");
+   check(call(subject,output,"print #1").contains("first"),"hash chooses reference namespace");
+   check(call(subject,output,"print id:1").contains("numeric stored ID"),"id prefix chooses exact stored ID");
+   check(call(subject,output,"print id:123").contains("numeric prefix"),"numeric stored-ID prefix remains available");
+   check(call(subject,output,"print all").contains("3 record(s)"),"collision preserves all records");
+  } finally {Files.deleteIfExists(file);}
+ }
+
+ /** Presentation mode adds ANSI styling but keeps records, control flow and errors real. */
+ private static void testStyledConsole() throws Exception {
+  StringWriter output=new StringWriter();PIMCli subject=new PIMCli(new PrintWriter(output,true),true);
+  subject.run(new BufferedReader(new StringReader("create note visible\nlist\nprint 1\nupdate 1 text revised\nclear\nprint #1\nupdate 1 text \"\"\nquit\n")));
+  String text=output.toString();
+  check(text.contains("\u001b[48;2;")&&text.contains("Created note #1."),"styled output enabled");
+  check(text.contains("YOUR RECORDS")&&text.contains("#1"),"styled list exposes reference");
+  check(text.contains("Text: revised")&&text.contains("ID: "),"styled details retain data and stored ID");
+  check(text.contains("Error: ")&&text.contains("Unsaved changes"),"styled failure and save status visible");
+  check(text.endsWith(ConsoleView.RESET),"terminal colors restored after exit");
+  output.getBuffer().setLength(0);subject.execute("create note \"\u001b[31mcontrol\"");subject.execute("print 2");
+  check(!output.toString().contains("\u001b[31m")&&output.toString().contains("\\u001b[31m"),"stored controls cannot inject terminal escapes");
+  StringWriter plain=new StringWriter();new PIMCli(new PrintWriter(plain,true)).run(new BufferedReader(new StringReader("quit\n")));
+  check(!plain.toString().contains("\u001b["),"plain mode has no ANSI sequences");
+ }
+
+ private static String call(PIMCli subject,StringWriter output,String command) {
+  output.getBuffer().setLength(0);subject.execute(command);return output.toString();
+ }
 }

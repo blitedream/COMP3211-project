@@ -22,7 +22,11 @@ mkdir -p build/classes
 javac -encoding UTF-8 -g -Xlint:-options -source 8 -target 8 -d build/classes "${main_sources[@]}"
 
 if [[ "$mode" == run ]]; then
-  exec java -Dfile.encoding=UTF-8 -cp build/classes cli.PIMCli
+  columns="${COLUMNS:-100}"
+  if [[ -t 1 ]] && command -v tput >/dev/null; then
+    columns="$(tput cols 2>/dev/null || printf '100')"
+  fi
+  exec java -Dfile.encoding=UTF-8 "-Dpim.columns=$columns" -cp build/classes cli.PIMCli
 fi
 
 test_sources=()

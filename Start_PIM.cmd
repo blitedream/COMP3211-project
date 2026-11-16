@@ -1,6 +1,7 @@
 @echo off
 setlocal
 title PIM - Personal Information Manager
+mode con: cols=120 lines=36 >nul 2>&1
 pushd "%~dp0"
 if errorlevel 1 (
     echo Cannot open the project folder.
