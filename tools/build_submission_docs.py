@@ -1,11 +1,15 @@
 from pathlib import Path
-import re, xml.etree.ElementTree as ET, zipfile, html
+import re, xml.etree.ElementTree as ET, zipfile, html, argparse
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Preformatted, KeepInFrame
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.graphics.shapes import Drawing, Rect, String, Line, Polygon
 R=Path(__file__).resolve().parents[1]
+parser=argparse.ArgumentParser(description='Build formal PDFs while preserving the reviewed Canva deck.')
+parser.add_argument('--only',nargs='+',choices=['01_SRS.pdf','02_Design.pdf','03_User_Manual.pdf','04_Developer_Manual.pdf','05_Presentation.pdf','06_Recording_Guide.pdf','Requirements_Coverage.pdf','Model_Line_Coverage.pdf'],help='Rebuild only the named PDFs; omitted means all eight.')
+selected=set(parser.parse_args().only or [])
+generated=[]
 OUT=R/'docs/final'; OUT.mkdir(parents=True,exist_ok=True)
 styles=getSampleStyleSheet()
 styles['Normal'].fontSize=10; styles['Normal'].leading=14
@@ -18,10 +22,12 @@ def table(rows,widths=None):
  t=Table([[p(str(c)) for c in row] for row in rows],colWidths=widths,repeatRows=1,hAlign='LEFT')
  t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#e8edf1')),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6),('LINEBELOW',(0,0),(-1,-1),.2,colors.lightgrey)]));return t
 def footer(c,d):
- c.setFont('Helvetica',8); c.drawString(42,25,'COMP3211 PIM | 16 November 2026');c.drawRightString(d.pagesize[0]-42,25,str(d.page))
+ c.setFont('Helvetica',8); c.drawString(42,25,'COMP3211 PIM | 17 November 2026');c.drawRightString(d.pagesize[0]-42,25,str(d.page))
 def build(path,title,items):
+ if selected and path.name not in selected:return
  while items and isinstance(items[-1], Spacer): items.pop()
  SimpleDocTemplate(str(path),pagesize=A4,rightMargin=42,leftMargin=42,topMargin=40,bottomMargin=42).build([p(title,'Title'),Spacer(1,12)]+items,onFirstPage=footer,onLaterPages=footer)
+ generated.append(path.name)
 def section(title,text):return [p(title,'Heading1'),p(text),Spacer(1,8)]
 def md(text):
  result=[];lines=text.splitlines();i=0
@@ -67,7 +73,10 @@ def diagram(kind):
  elif kind=='classes':
   box(160,175,190,65,'PIR abstract','id: String; getId(); getType()\ntoDetailString()')
   for x,title,fields in [(0,'Note','text'),(130,'Task','description, deadline'),(260,'Event','description, start, alarm'),(390,'Contact','name, address, mobile')]:
-   box(x,70,120,65,title,fields);arrow(x+60,135,255,175,hollow=True)
+   box(x,70,120,65,title,fields)
+   d.add(Line(x+60,135,x+60,155,strokeColor=colors.HexColor('#567086')))
+  d.add(Line(60,155,450,155,strokeColor=colors.HexColor('#567086')))
+  arrow(255,155,255,175,hollow=True)
   d.add(String(15,30,'Arrows indicate inheritance. PIMModel holds PIRs in an ordered map.',fontSize=9))
  elif kind=='saving':
   d=Drawing(510,140)
@@ -146,14 +155,16 @@ manual=(R/'docs/D_CLI_manual.md').read_text(encoding="utf-8")
 styles['Normal'].fontSize=9.5; styles['Normal'].leading=12.5
 build(OUT/'03_User_Manual.pdf','PIM User Manual',section('Getting started','On Windows, double-click the startup CMD file in the project folder, or run .\\run.ps1 from PowerShell. A JDK is required. Enter commands at pim>, not in PowerShell. Type help to list commands. The double-click launcher saves relative paths in the project folder.')+md(manual.split('## User guide')[1].split('## Design')[0]))
 styles['Normal'].fontSize=10; styles['Normal'].leading=14
-build(OUT/'04_Developer_Manual.pdf','PIM Developer Manual',md(manual.split('## Developer guide')[1].split('## User guide')[0])+section('Coverage','Run .\\run_coverage.ps1. It compiles with debug information, runs all checks, then instruments only the four model test suites. JaCoCo 0.8.11 produces build/coverage.xml and coverage-report/index.html. CLI integration execution is excluded from model unit coverage.')+section('Debugging','In IntelliJ IDEA configure JDK 21, mark src/main/java as sources and src/test/java as tests, then run or debug cli.PIMCli.main. Set breakpoints in execute or PIMModel. Model tests use JUnit 4.13.2 @Test methods and JUnitCore. Add lib/junit-4.13.2.jar and lib/hamcrest-core-1.3.jar to the IDE test classpath. Existing explicit AssertionError checks remain; -ea is not required. CLI integration checks retain their separate main entry point.')+section('Compatibility','Windows with JDK 21.0.3 is the verified build platform. UTF-8 compilation targets Java 8 bytecode. This revision was tested on JDK 21.0.3; a Java 8 runtime was not re-tested. The runtime uses standard libraries only. JaCoCo is a test tool.')+section('Document generation','tools/build_submission_docs.py generates PDFs using Python and ReportLab as authoring tools only. They are not application dependencies. Regenerate coverage before rebuilding the PDF reports.'))
+build(OUT/'04_Developer_Manual.pdf','PIM Developer Manual',md(manual.split('## Developer guide')[1].split('## User guide')[0])+section('Coverage','Run .\\run_coverage.ps1. It compiles with debug information, runs all checks, then instruments only the four model suites. JaCoCo 0.8.11 produces build/coverage.xml and coverage-report/index.html. CLI and reporter checks are excluded from model coverage.')+section('Debugging','In IntelliJ IDEA configure JDK 21, mark src/main/java as sources and src/test/java as tests, then run or debug cli.PIMCli.main. Set breakpoints in execute or PIMModel. NamedTestRunner invokes JUnitCore and prints each case name and outcome. Add lib/junit-4.13.2.jar and lib/hamcrest-core-1.3.jar to the IDE test classpath. Explicit AssertionError checks need no -ea option. CLI checks retain their separate main entry point.')+section('Compatibility','Windows builds and tests pass on Temurin JDK 21.0.3 and Azul Zulu JDK 8u512 (1.8.0_512-b09). UTF-8 compilation targets Java 8 bytecode. Application execution uses standard libraries only; JUnit, Hamcrest and JaCoCo are test tools.')+section('Document generation','tools/build_submission_docs.py generates PDFs using Python and ReportLab as authoring tools only. They are not application dependencies. Regenerate coverage before rebuilding its PDF report.'))
 build(R/'Requirements_Coverage.pdf','PIM Requirements Coverage',coverage(p,section,table,PageBreak))
 xml=ET.parse(R/'build/coverage.xml').getroot();counts={c.attrib['type']:(int(c.attrib['missed']),int(c.attrib['covered'])) for c in xml.findall('counter')};m,c=counts['LINE'];pct=100*c/(c+m)
 rows=[['Measure','Covered','Total','Coverage']]+[[k,str(c),str(c+m),f'{100*c/(c+m):.2f}%'] for k,(m,c) in counts.items() if k in ['LINE','BRANCH','INSTRUCTION','METHOD','CLASS']]
-build(R/'Model_Line_Coverage.pdf','PIM Model Line Coverage',[p(f'Model line coverage is {pct:.2f}%. Measured on 16 November 2026 using JaCoCo 0.8.11, javac 21.0.12.1 and Java 21.0.12.1 on Linux with JUnit 4.13.2.'),Spacer(1,12),table(rows,[160,100,100,151])]+section('Reproduce the measurement','Execute .\\run_coverage.ps1. Scope: build/classes/model; instrumented suites: ModelCoreTest, SearchTest, PersistenceTest and AtomicSaveTest. CliTest is excluded. Detailed results: coverage-report/index.html and build/coverage.xml. Regenerate this PDF after source or test changes.')+section('Interpretation','56 named model cases across four suites pass; CLI checks are separate. Coverage measures executed lines, not assertion strength or requirement completeness. These tests compare values and expected exceptions. Full coverage is not claimed; the project description does not prescribe a minimum percentage.'))
+build(R/'Model_Line_Coverage.pdf','PIM Model Line Coverage',[p(f'Model line coverage is {pct:.2f}%. Measured on 17 November 2026 using JaCoCo 0.8.11, javac 21.0.3 and Java 21.0.3 on Windows with JUnit 4.13.2.'),Spacer(1,12),table(rows,[160,100,100,151])]+section('Reproduce the measurement','Execute .\\run_coverage.ps1. Scope: build/classes/model; instrumented suites: ModelCoreTest, SearchTest, PersistenceTest and AtomicSaveTest. CLI tests and testsupport classes are excluded. Detailed results: coverage-report/index.html and build/coverage.xml. Regenerate this PDF after source or test changes.')+section('Interpretation','56 named model cases across four suites pass; three reporter checks and CLI checks are separate. Coverage measures executed lines, not assertion strength or requirement completeness. These tests compare values and expected exceptions. Full coverage is not claimed; the project description does not prescribe a minimum percentage.'))
 # Preserve the reviewed Canva deck; never regenerate obsolete slides.
 import shutil
-shutil.copy2(R/'presentation_final/PIM_Presentation.pdf', OUT/'05_Presentation.pdf')
+if not selected or '05_Presentation.pdf' in selected:
+ shutil.copy2(R/'presentation_final/PIM_Presentation.pdf', OUT/'05_Presentation.pdf')
+ generated.append('05_Presentation.pdf')
 build(OUT/'06_Recording_Guide.pdf','PIM Recording and Submission Guide',section('System demonstration','Target 3 minutes 40 seconds: start (20 seconds); create four types (50); print and copy ID (20); search and update (50); save, restart and load (45); invalid input and delete (35). Record the actual program as MP4. This guide is not the video.')+section('Presentation recording','Use the reviewed eight-slide deck: A pages 1-2, B pages 3-4, C pages 5-6, D pages 7-8. Target A/B at 70 seconds each and C/D at 75 seconds each (4 minutes 50 seconds including ID displays), leaving 10 seconds for transitions. Rehearsal targets are not measured durations. Each presenter must speak for at least one minute. All presenters show faces and student IDs at the beginning; the current presenter remains visible. A/B/C/D labels are speaking sections, not contribution percentages.')+section('Example demonstration','Create a task called Finish report, search type = task && description contains "report", copy its ID, and update only deadline. Print it to show the description remains. Save demo.pim, restart and load it. Try an unknown ID or invalid date, then print all to show recovery.')+section('Human completion','Review group facts, record the two MP4 videos, agree contributions and complete the official Honour Declaration with signatures and all required declarations completed. Add these materials before final submission. Confirm names, student IDs, signatures and contribution percentages before submission.'))
-print(f'Generated eight PDFs. Model line coverage: {pct:.2f}%')
+print(f'Generated {len(generated)} PDFs: {", ".join(generated)}. Model line coverage: {pct:.2f}%')
 

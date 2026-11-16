@@ -3,7 +3,7 @@
 ## Developer guide
 
 Model tests use JUnit 4.13.2 and Hamcrest 1.3 bundled under `lib/`. Add both JARs to the IDE test classpath. The application has no third-party runtime dependencies. Run `bash pim.sh test` on Linux or `run_d_tests.ps1` on Windows.
-Developed and tested on Windows with Temurin JDK 21.0.3; sources target Java 8. This revision is verified on JDK 21.0.3; a Java 8 runtime was not re-tested for this revision.
+Developed and tested on Windows with Temurin JDK 21.0.3; sources target Java 8. On 17 November 2026, the model, reporter and CLI checks also compiled and passed on Windows with Azul Zulu JDK 8u512 (1.8.0_512-b09).
 Only standard Java libraries are used. Open the project folder in an IDE with Java support (for example IntelliJ IDEA), mark src/main/java as sources and src/test/java as tests, and run or debug cli.PIMCli.main.
 From PowerShell in the repository root:
 
@@ -11,7 +11,7 @@ From PowerShell in the repository root:
 .\run.ps1
 .\run_d_tests.ps1
 ```
-The first command compiles and launches the interactive app. The second compiles all sources and runs A/B/C tests plus CLI integration checks. No Maven or downloaded runtime dependencies are needed.
+The first command compiles and launches the interactive app. The second compiles all sources and runs 56 model cases, three reporter checks and the CLI integration checks. No Maven or downloaded runtime dependencies are needed.
 
 ## User guide
 Enter commands at `pim>`, not directly in PowerShell. Commands and type names are case-insensitive. Quote arguments containing spaces with double quotes. Within quoted command arguments, two double quotes represent one literal quote. Backslashes are literal, including Windows paths. Dates use exactly `yyyy-MM-dd HH:mm`, with valid calendar dates and 24-hour times. Times have no timezone; model detail output uses ISO `T` between date and time.

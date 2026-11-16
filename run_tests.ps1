@@ -10,11 +10,7 @@ $testSources = @(Get-ChildItem -LiteralPath (Join-Path $root 'src\test\java') -F
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & javac -encoding UTF-8 -g -Xlint:-options -source 8 -target 8 -cp "$mainOut;$testLibs" -d $testOut @testSources
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& java -cp "$mainOut;$testOut;$testLibs" org.junit.runner.JUnitCore model.ModelCoreTest
+& java -cp "$mainOut;$testOut;$testLibs" testsupport.NamedTestRunner model.ModelCoreTest model.SearchTest model.PersistenceTest model.AtomicSaveTest
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& java -cp "$mainOut;$testOut;$testLibs" org.junit.runner.JUnitCore model.SearchTest
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& java -cp "$mainOut;$testOut;$testLibs" org.junit.runner.JUnitCore model.PersistenceTest
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& java -cp "$mainOut;$testOut;$testLibs" org.junit.runner.JUnitCore model.AtomicSaveTest
+& java -cp "$mainOut;$testOut;$testLibs" testsupport.NamedTestRunner testsupport.NamedTestRunnerTest
 exit $LASTEXITCODE

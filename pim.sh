@@ -30,17 +30,12 @@ while IFS= read -r -d '' source; do test_sources+=("$source"); done < <(find src
 mkdir -p build/test-classes
 javac -encoding UTF-8 -g -Xlint:-options -source 8 -target 8 -cp "build/classes${separator}${testlibs}" -d build/test-classes "${test_sources[@]}"
 suites=(model.ModelCoreTest model.SearchTest model.PersistenceTest model.AtomicSaveTest)
-for suite in "${suites[@]}"; do
-  java -Dfile.encoding=UTF-8 -cp "$classpath" org.junit.runner.JUnitCore "$suite"
-done
+java -Dfile.encoding=UTF-8 -cp "$classpath" testsupport.NamedTestRunner "${suites[@]}"
+java -Dfile.encoding=UTF-8 -cp "$classpath" testsupport.NamedTestRunner testsupport.NamedTestRunnerTest
 java -Dfile.encoding=UTF-8 -cp "$classpath" cli.CliTest
 
 if [[ "$mode" == coverage ]]; then
-  append=false
-  for suite in "${suites[@]}"; do
-    java "-javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=build/model-coverage.exec,append=$append" -Dfile.encoding=UTF-8 -cp "$classpath" org.junit.runner.JUnitCore "$suite"
-    append=true
-  done
+  java '-javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=build/model-coverage.exec,append=false' -Dfile.encoding=UTF-8 -cp "$classpath" testsupport.NamedTestRunner "${suites[@]}"
   java -jar lib/org.jacoco.cli-0.8.11-nodeps.jar report build/model-coverage.exec \
     --classfiles build/classes/model --sourcefiles src/main/java \
     --html build/cloud-coverage-report --xml build/cloud-coverage.xml 2>&1 | tee build/cloud-coverage-report.log

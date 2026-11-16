@@ -1,14 +1,16 @@
-COMP3211 PIM - Quality acceptance, 16 November 2026
+COMP3211 PIM - Quality acceptance, 17 November 2026
 
-Scope: all non-video deliverables in the existing local submission-prep checkout,
-plus the existing eight-page Canva presentation. Honour/video work remains human.
-No repository push was performed. Backups: build/pre-quality-20261116.
+Scope: non-video deliverables on codex/cloud-dev-20261116, including the latest
+eight-page Canva PDF export. Honour/video work remains human. This is a technical
+acceptance record, not an instructor's grade or an assertion of defect-free software.
 
 1 SRS (teacher weight 6): PASS for required coverage and consistency checks.
 Version 1.2 has the six required chapters, US1-US11, FR-01-FR-12 and NFR-01-NFR-04.
 NFR-03 specifies Error: plus nonempty reason, no stack trace, unchanged data and
 successful next command. FR-11 specifies safe staged atomic saving and limits.
 Acceptance scenarios identify observable outcomes and executable evidence.
+NFR-04's named per-case result requirement is now implemented by a JUnit listener,
+with real failure/continuation/skip checks rather than only aggregate test counts.
 
 2 Design (teacher weight 5): PASS for required diagrams/API descriptions.
 Includes architecture, components, inheritance, search/update sequence with dashed
@@ -16,6 +18,8 @@ returns, activations and guarded alternatives, and internal safe-saving flow.
 Explains MVC-inspired separation, immutable replacements, ordered storage, linear
 search, recursive descent, complexity and alternatives/trade-offs. Describes new
 AtomicFileWriter and its package-private failure-injection interfaces.
+The inheritance diagram uses one hollow triangle and a shared connector, removing
+the previously overlapping arrowheads. Test-runner responsibilities are documented.
 
 3 Implementation (teacher weight 6; video not assessed): PASS for non-video checks.
 Only standard Java runtime libraries; model in model package. Four PIR types,
@@ -23,15 +27,22 @@ create/update/search/print/delete/save/load retained. Save stages bytes beside t
 destination, forces them, then requests atomic replacement. Unsupported replacement
 fails without an unsafe fallback. Partial-write and replacement-failure tests compare
 old destination bytes and assert cleanup. User/developer manuals reflect actual behavior.
-Current revision was executed on Windows/JDK 21.0.3 with Java 8 target bytecode.
-A Java 8 runtime was not re-tested for this revision; no broader certification claimed.
+Current revision compiled and passed on Windows with Temurin JDK 21.0.3 and
+Azul Zulu JDK 8u512 (1.8.0_512-b09), using Java 8 target bytecode. The JDK 8
+archive was downloaded from Azul's official CDN and its SHA-256 checked against
+the official package metadata; it stays under ignored build/java8-verification.
+The JDK 8 run used the unpacked preview archive in a path with Chinese and spaces.
+No system Java installation or persistent PATH setting was changed.
 
 4 Unit tests (teacher weight 4): PASS.
 ModelCoreTest 9; SearchTest 22; PersistenceTest 19; AtomicSaveTest 6: 56 named model
-cases passed, 0 failures. CLI integration checks passed separately.
-Runner contract probe: an intentional failed case produces a nonzero exit status and
-a subsequent case still runs. Probe is isolated under build/runner-probe, not submitted
-as an application test. Coverage excludes CLI tests and the test runner classes.
+cases passed, 0 failures, 0 ignored. Each prints its name and outcome.
+Three testsupport.NamedTestRunnerTest checks and CLI integration checks passed
+separately on both JDKs. They do not count toward the 56 model cases.
+A subprocess probe of FailureFixture confirms status 1, a named failed case and
+a later passing case; omitted runner arguments return status 2. Deliberately failing
+and skipped fixtures are nested helper classes, not invoked as model test suites.
+Coverage excludes CLI tests and the testsupport classes.
 Model line coverage 428/431 = 99.30%; branch 257/268 = 95.90%; methods 95/95.
 JaCoCo report emitted no class mismatch warnings. Relative agent paths fix the risk of
 reading stale coverage in non-ASCII Windows directories. run_coverage.ps1 rejects WARN.
@@ -47,9 +58,24 @@ local speaker script updated. Final PDF exported from Canva and copied byte-for-
 to presentation_final/PIM_Presentation.pdf and docs/final/05_Presentation.pdf.
 
 Document QA: SRS DOCX rendered through Word; formal PDFs rendered and reviewed.
-PDFs have no empty pages; final file references and test metrics cross-checked.
-Packaging script parsed successfully; root coverage reports and required source/test
-files present. Required human files are still absent, so no final submission ZIP created.
+Updated design, developer manual and both root reports were regenerated and rendered;
+changed pages were visually reviewed. Formal PDFs have no empty pages. The SRS and
+Canva deck were preserved. Both presentation PDF copies are byte-identical.
+
+Packaging: make_submission.ps1 -Preview creates a clearly labelled incomplete archive
+with NOT_FOR_SUBMISSION.txt; it never pretends that videos or the declaration exist.
+The packaged README links to documents/ and omits repository-only authoring steps.
+All 11 README file links resolve; formal PDFs match source bytes. The packager checks
+required PDFs and README links before writing the ZIP, and closes its archive handles.
+The extracted preview passed model, reporter and CLI checks from a fresh Chinese/space
+path. A direct CLI smoke check created all four types, searched, round-tripped Unicode
+through a spaced .pim filename, replaced the collection on load and exited normally.
+Without -Preview, missing human deliverables correctly cause status 1 before packaging.
+No final submission ZIP has been created; the preview is not suitable for submission.
+
+Local evidence: build/named-runner-verification.log, build/final-coverage-verification.log,
+build/runner-failure-exit.log, build/java8-verification/test-results.log,
+build/unpacked-verification.log and build/unpacked-cli-smoke.log.
 
 Remaining human work only: demo.mp4 <=4 minutes; presentation.mp4 <=5 minutes with
 each member >=1 minute and required face/ID visibility; official Honour_Declaration.pdf

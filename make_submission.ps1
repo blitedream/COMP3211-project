@@ -7,41 +7,51 @@
 #
 # Usage:
 #   .\make_submission.ps1
+#   .\make_submission.ps1 -Preview  # clearly marked incomplete review archive
 #
 # The script only reads the repository; it writes the staging folder and the ZIP
 # under build/ and refuses to clear anything outside that folder.
 
+param([switch]$Preview)
+
 $ErrorActionPreference = 'Stop'
-$root = $PSScriptRoot
-$stage = Join-Path $root 'build/submission'
-$zip = Join-Path $root ('build/COMP3211_submission_' + (Get-Date -Format 'yyyyMMdd_HHmm') + '.zip')
+$root = [IO.Path]::GetFullPath($PSScriptRoot)
+$stageName = if ($Preview) { 'submission-preview' } else { 'submission' }
+$archiveName = if ($Preview) { 'COMP3211_PREVIEW_NOT_FOR_SUBMISSION_' } else { 'COMP3211_submission_' }
+$stage = [IO.Path]::GetFullPath((Join-Path $root "build/$stageName"))
+$zip = Join-Path $root ('build/' + $archiveName + (Get-Date -Format 'yyyyMMdd_HHmmss_fff') + '.zip')
 
 $required = @(
     'Honour_Declaration.pdf',
     'video/demo.mp4',
     'video/presentation.mp4'
 )
+$missing = @()
 foreach ($rel in $required) {
     $full = Join-Path $root $rel
-    if (-not (Test-Path -LiteralPath $full)) {
-        throw "Missing required submission file: $rel (complete the official Honour Declaration and export it as Honour_Declaration.pdf; record both videos into video/)"
+    if (-not (Test-Path -LiteralPath $full -PathType Leaf) -or (Get-Item -LiteralPath $full).Length -eq 0) {
+        $missing += $rel
     }
+}
+if ($missing.Count -gt 0 -and -not $Preview) {
+    throw ('Missing or empty required submission files: ' + ($missing -join ', ') + '. Complete these human deliverables; use -Preview only for an incomplete review archive.')
 }
 
 # Safety: only ever clear the staging folder inside build/.
-$buildRoot = (Join-Path $root 'build') + [IO.Path]::DirectorySeparatorChar
+$buildRoot = [IO.Path]::GetFullPath((Join-Path $root 'build')) + [IO.Path]::DirectorySeparatorChar
 if (-not $stage.StartsWith($buildRoot, [StringComparison]::OrdinalIgnoreCase)) {
     throw "Refusing to clear a staging path outside build/: $stage"
 }
 if (Test-Path -LiteralPath $stage) {
+    if ((Get-Item -LiteralPath $stage).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw "Refusing to clear a linked staging folder: $stage"
+    }
     Remove-Item -LiteralPath $stage -Recurse -Force
 }
 New-Item -ItemType Directory -Path $stage | Out-Null
 
 # Files that must sit at the ZIP root (the Honour Declaration must be one of them).
 $rootFiles = @(
-    'README.md',
-    'Honour_Declaration.pdf',
     'Requirements_Coverage.pdf',
     'Model_Line_Coverage.pdf',
     ([string][char]0x542F + [char]0x52A8 + ' PIM.cmd'),
@@ -55,6 +65,22 @@ foreach ($f in $rootFiles) {
     $full = Join-Path $root $f
     if (-not (Test-Path -LiteralPath $full)) { throw "Missing file: $f" }
     Copy-Item -LiteralPath $full -Destination $stage
+}
+if ($missing -notcontains 'Honour_Declaration.pdf') {
+    Copy-Item -LiteralPath (Join-Path $root 'Honour_Declaration.pdf') -Destination $stage
+}
+
+# Use the same reading guide, with links matching the actual archive layout.
+# Repository-only instructions refer to authoring files that are not submitted.
+$readme = Get-Content -LiteralPath (Join-Path $root 'README.md') -Raw -Encoding UTF8
+$readme = ($readme -split '<!-- REPOSITORY-ONLY:', 2)[0].TrimEnd()
+$readme = $readme.Replace('(docs/final/', '(documents/').Replace('`docs/final/`', '`documents/`')
+[IO.File]::WriteAllText((Join-Path $stage 'README.md'), $readme + "`n", (New-Object Text.UTF8Encoding($false)))
+if ($Preview) {
+    $notice = "NOT FOR SUBMISSION - preview archive for technical checks only.`n"
+    $notice += "Missing or empty human deliverables: " + ($missing -join ', ') + "`n"
+    $notice += "Video content, timing, identity requirements and the signed declaration require human review.`n"
+    [IO.File]::WriteAllText((Join-Path $stage 'NOT_FOR_SUBMISSION.txt'), $notice)
 }
 
 # Repository folders copied into the ZIP under a stable name.
@@ -71,6 +97,25 @@ foreach ($name in $folders.Keys) {
     Copy-Item -LiteralPath $from -Destination (Join-Path $stage $folders[$name]) -Recurse -Force
 }
 
+# Validate the actual staged layout, not just the source folders.
+foreach ($name in @('01_SRS.pdf','02_Design.pdf','03_User_Manual.pdf','04_Developer_Manual.pdf','05_Presentation.pdf')) {
+    $document = Join-Path $stage "documents/$name"
+    if (-not (Test-Path -LiteralPath $document -PathType Leaf) -or (Get-Item -LiteralPath $document).Length -eq 0) {
+        throw "Missing or empty formal document: $name"
+    }
+}
+$checkedLinks = 0
+foreach ($match in [regex]::Matches($readme, '\]\(([^)]+)\)')) {
+    $link = $match.Groups[1].Value
+    if ($link -match '^(https?://|#)') { continue }
+    $target = [IO.Path]::GetFullPath((Join-Path $stage $link))
+    if (-not $target.StartsWith($stage + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $target -PathType Leaf)) {
+        throw "Broken or external file link in packaged README: $link"
+    }
+    $checkedLinks++
+}
+"Verified $checkedLinks packaged README file links and all five required formal PDFs."
+
 $staged = Get-ChildItem -LiteralPath $stage -Recurse -File | Measure-Object -Property Length -Sum
 'Staged {0} files, {1:N1} MB' -f $staged.Count, ($staged.Sum / 1MB)
 
@@ -79,7 +124,7 @@ $staged = Get-ChildItem -LiteralPath $stage -Recurse -File | Measure-Object -Pro
 # treat as directory separators.
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-$stream = [IO.File]::Open($zip, [IO.FileMode]::Create)
+$stream = [IO.File]::Open($zip, [IO.FileMode]::CreateNew)
 try {
     $archive = New-Object IO.Compression.ZipArchive($stream, [IO.Compression.ZipArchiveMode]::Create)
     try {
@@ -97,10 +142,15 @@ try {
 }
 'Created ' + $zip
 
-$top = [IO.Compression.ZipFile]::OpenRead($zip).Entries |
-    ForEach-Object { ($_.FullName -split '/')[0] } |
-    Sort-Object -Unique
+$inspection = [IO.Compression.ZipFile]::OpenRead($zip)
+try {
+    $top = $inspection.Entries |
+        ForEach-Object { ($_.FullName -split '/')[0] } |
+        Sort-Object -Unique
+} finally {
+    $inspection.Dispose()
+}
 'ZIP root contains: ' + ($top -join ', ')
-if ($top -notcontains 'Honour_Declaration.pdf') {
+if (-not $Preview -and $top -notcontains 'Honour_Declaration.pdf') {
     throw 'Honour_Declaration.pdf is not at the ZIP root; do not submit this archive.'
 }

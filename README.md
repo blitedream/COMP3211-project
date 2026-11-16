@@ -8,8 +8,9 @@ The application uses only Java standard libraries.
 
 - Windows with PowerShell, or Linux / Linux development environment with Bash.
 - A JDK with `java` and `javac` available on PATH.
-- Verified with Eclipse Temurin JDK 21.0.3. Compilation targets Java 8;
-  the current revision was tested on JDK 21.0.3, not re-tested on a Java 8 runtime.
+- Verified on Windows with Eclipse Temurin JDK 21.0.3 and Azul Zulu JDK
+  8u512 (1.8.0_512-b09). Both compiled and passed the model, reporter and CLI
+  checks on 17 November 2026. Compilation targets Java 8.
 
 No Maven, Gradle or runtime dependency installation is needed. The JAR files in
 `lib/` are JUnit 4.13.2, Hamcrest 1.3 and JaCoCo test tools, not application dependencies.
@@ -52,8 +53,9 @@ Quote arguments containing spaces. Dates use `yyyy-MM-dd HH:mm`.
 Save stages and flushes a same-directory temporary file before atomic replacement. Failed staging or unsupported replacement preserves the old destination; no unsafe fallback is used. A successful load replaces the current
 collection; a failed load preserves it. Quit and end-of-input do not save
 changes automatically. Relative file paths resolve from the launch directory.
-See the [CLI user and developer guide](docs/D_CLI_manual.md) for all commands,
-field names, error handling and development instructions.
+See the [user manual](docs/final/03_User_Manual.pdf) for all commands, field names
+and error handling, and the [developer manual](docs/final/04_Developer_Manual.pdf)
+for build and debugging instructions.
 
 ## Run tests
 
@@ -70,8 +72,11 @@ To run only the model suites:
 ```
 
 Both scripts compile source and test files. A failed compilation or test returns
-a nonzero exit code. The model suites report 56 named test cases: 9 core,
-22 search, 19 persistence and 6 atomic-save cases. The additional CLI suite
+a nonzero exit code. The model suites report a named `[PASS]` or `[FAIL]` for
+each of 56 cases: 9 core, 22 search, 19 persistence and 6 atomic-save cases.
+JUnit continues running the remaining cases after a failure. Three separate
+test-infrastructure checks verify the reporter; they do not count toward the
+56 model cases or model coverage. The additional CLI suite
 prints `CLI integration checks passed` on success. Test counts alone do not
 prove complete coverage.
 
@@ -93,8 +98,6 @@ Cloud coverage output is written to `build/cloud-coverage-report/index.html`
 and `build/cloud-coverage.xml`, leaving the submitted report intact until the
 new measurements have been reviewed. These commands work from any directory;
 relative PIM save paths resolve inside this repository.
-See [cloud development handoff](docs/CLOUD_DEVELOPMENT.md) for the verified
-baseline, document sources and remaining human deliverables.
 
 ## Project structure and contributions
 
@@ -107,20 +110,31 @@ baseline, document sources and remaining human deliverables.
 | `run.ps1` | Compile and start the application |
 | `run_tests.ps1` | Compile and run model tests |
 | `run_d_tests.ps1` | Run model tests followed by CLI checks |
-| `docs/` | Requirements draft, module designs and CLI guide |
+| `docs/final/` | Formal SRS, design, manuals, slides and recording guide |
 
 ## Documentation
 
-- [SRS draft](docs/PIM_SRS_Draft.docx)
-- [A module guide](docs/A_README.md) and [core design](docs/A_core_design.md)
-- [B search design and expression grammar](docs/B_search_design.md)
-- [C persistence and record operations](docs/C_persistence_design.md)
-- [D CLI user/developer guide and integration design](docs/D_CLI_manual.md)
+- [Software requirements specification](docs/final/01_SRS.pdf)
+- [Design document and API reference](docs/final/02_Design.pdf)
+- [User manual](docs/final/03_User_Manual.pdf)
+- [Developer manual](docs/final/04_Developer_Manual.pdf)
+- [Presentation slides](docs/final/05_Presentation.pdf)
+- [Recording guide](docs/final/06_Recording_Guide.pdf)
+- [Requirements coverage](Requirements_Coverage.pdf)
+- [Model line coverage](Model_Line_Coverage.pdf)
 
-The module documents are working material. This README does not replace the
-course's required formal manuals, consolidated design document, requirements
-coverage report, coverage report, videos or presentation deliverables.
+These PDFs are the formal submission documents. The ZIP stores the six formal
+documents under `documents/`, with this README's paths adjusted automatically.
 
+## JUnit model tests
+
+The 56 model cases use JUnit 4 `@Test` and `JUnitCore` through
+`testsupport.NamedTestRunner`, which prints each case's name and outcome.
+Run `bash pim.sh test` or `./run_tests.ps1`; CLI integration checks remain a
+separate executable. Add both JUnit and Hamcrest JARs from `lib/` to the IDE
+test classpath. Application execution needs neither JAR.
+
+<!-- REPOSITORY-ONLY: the packager omits the following authoring instructions. -->
 ## Build the submission archive
 
 1. Fill `Honour_Declaration_TEMPLATE.docx`, export it as PDF and save it as
@@ -136,7 +150,13 @@ coverage report, coverage report, videos or presentation deliverables.
 The script writes `build/COMP3211_submission_<timestamp>.zip` and verifies that
 `Honour_Declaration.pdf` sits at the archive root, as the course requires.
 
+Before the human deliverables are ready, use `./make_submission.ps1 -Preview`
+to create `build/COMP3211_PREVIEW_NOT_FOR_SUBMISSION_<timestamp>.zip` for an
+unpack-and-run check. It includes a prominent `NOT_FOR_SUBMISSION.txt` listing
+missing materials. The normal command still refuses to produce a submission
+without both MP4 files and the completed Honour Declaration. File presence
+does not verify signatures, contribution percentages, video timing or faces;
+the group must review these before submission.
 
-## JUnit model tests
-
-The 56 model cases use JUnit 4 `@Test` and `JUnitCore`. Run `bash pim.sh test` or `./run_tests.ps1`; CLI integration checks remain a separate executable. Add both JUnit and Hamcrest JARs from `lib/` to the IDE test classpath. Application execution needs neither JAR.
+Repository authoring material and the cloud handoff remain under `docs/`;
+only the formal PDFs are included in the submission ZIP.
