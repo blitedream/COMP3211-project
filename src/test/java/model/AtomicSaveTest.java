@@ -1,5 +1,7 @@
 package model;
 
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -10,10 +12,10 @@ import java.util.stream.Stream;
 
 /** FR-11: disk failures must not destroy the previous saved collection. */
 public final class AtomicSaveTest {
-    public static void main(String[] args) { TestSupport.runSuite(AtomicSaveTest.class); }
 
     /** A real overwrite commits the new complete collection and removes staging files. */
-    private static void testSuccessfulReplacement() throws Exception {
+    @Test
+    public void testSuccessfulReplacement() throws Exception {
         withDestination((dir, file) -> {
             PIMModel model = new PIMModel();
             model.createNote("new complete data");
@@ -25,7 +27,8 @@ public final class AtomicSaveTest {
     }
 
     /** A partial staged write fails before replacement; old bytes remain identical. */
-    private static void testPartialWriteFailurePreservesOriginal() throws Exception {
+    @Test
+    public void testPartialWriteFailurePreservesOriginal() throws Exception {
         withDestination((dir, file) -> {
             byte[] old = Files.readAllBytes(file);
             expectIOException(() -> AtomicFileWriter.write(file, new byte[]{1, 2, 3},
@@ -37,7 +40,8 @@ public final class AtomicSaveTest {
     }
 
     /** Failure to commit a completed stage leaves the original bytes intact. */
-    private static void testReplacementFailurePreservesOriginal() throws Exception {
+    @Test
+    public void testReplacementFailurePreservesOriginal() throws Exception {
         withDestination((dir, file) -> {
             byte[] old = Files.readAllBytes(file);
             expectIOException(() -> AtomicFileWriter.write(file, new byte[]{1, 2},
@@ -49,7 +53,8 @@ public final class AtomicSaveTest {
     }
 
     /** Unsupported atomic moves are reported; there is no destructive fallback. */
-    private static void testUnsupportedAtomicMovePreservesOriginal() throws Exception {
+    @Test
+    public void testUnsupportedAtomicMovePreservesOriginal() throws Exception {
         withDestination((dir, file) -> {
             byte[] old = Files.readAllBytes(file);
             expectIOException(() -> AtomicFileWriter.write(file, new byte[]{1},
@@ -62,7 +67,8 @@ public final class AtomicSaveTest {
     }
 
     /** Saving an empty collection replaces the previous file with a valid empty file. */
-    private static void testSaveEmptyCollection() throws Exception {
+    @Test
+    public void testSaveEmptyCollection() throws Exception {
         withDestination((dir, file) -> {
             PIMFileCodec.save(new PIMModel(), file);
             check(Files.size(file) == 0 && PIMFileCodec.load(file).listRecords().isEmpty(), "empty round trip");
@@ -71,7 +77,8 @@ public final class AtomicSaveTest {
     }
 
     /** A nonempty directory cannot be replaced by a saved file; its child survives. */
-    private static void testDirectoryDestinationIsPreserved() throws Exception {
+    @Test
+    public void testDirectoryDestinationIsPreserved() throws Exception {
         Path dir = Files.createTempDirectory("pim-directory-test");
         Path target = Files.createDirectory(dir.resolve("data.pim"));
         Path child = target.resolve("keep.txt");

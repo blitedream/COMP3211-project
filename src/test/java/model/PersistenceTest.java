@@ -1,5 +1,7 @@
 package model;
 
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,10 +14,10 @@ public final class PersistenceTest {
     private static final LocalDateTime T1 = LocalDateTime.of(2026, 10, 1, 9, 0);
     private static final LocalDateTime T2 = LocalDateTime.of(2026, 10, 2, 9, 0);
 
-    public static void main(String[] args) { TestSupport.runSuite(PersistenceTest.class); }
 
     /** US8: toDetailString of every PIR type contains the ID, type, and all fields. */
-    private static void testDetailStringAllTypes() {
+    @Test
+    public void testDetailStringAllTypes() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Buy milk");
         Task task = model.createTask("Report", T2);
@@ -36,7 +38,8 @@ public final class PersistenceTest {
     }
 
     /** US9: after deleting an existing record, the list omits it and getRecord fails. */
-    private static void testDeleteExisting() {
+    @Test
+    public void testDeleteExisting() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Buy milk");
         Task task = model.createTask("Report", T2);
@@ -46,13 +49,15 @@ public final class PersistenceTest {
     }
 
     /** US9: deleting a missing ID throws. */
-    private static void testDeleteMissing() {
+    @Test
+    public void testDeleteMissing() {
         PIMModel model = new PIMModel();
         expect(RecordNotFoundException.class, () -> model.deleteRecord("missing"));
     }
 
     /** US9: the same ID can be added again after deletion. */
-    private static void testDeleteThenReAdd() {
+    @Test
+    public void testDeleteThenReAdd() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Old");
         model.deleteRecord(note.getId());
@@ -62,7 +67,8 @@ public final class PersistenceTest {
     }
 
     /** US10+US11: round trip preserves all types, IDs, and insertion order. */
-    private static void testSaveLoadRoundTrip() throws Exception {
+    @Test
+    public void testSaveLoadRoundTrip() throws Exception {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Buy milk");
         Task task = model.createTask("Report", T2);
@@ -91,7 +97,8 @@ public final class PersistenceTest {
     }
 
     /** US10+US11: newlines, Chinese text, and special symbols survive the round trip. */
-    private static void testSaveLoadSpecialCharacters() throws Exception {
+    @Test
+    public void testSaveLoadSpecialCharacters() throws Exception {
         PIMModel model = new PIMModel();
         model.createNote("line1\nline2 = with = and & symbols");
         model.createTask("\u4e2d\u6587 task & report", T2);
@@ -109,91 +116,104 @@ public final class PersistenceTest {
     }
 
     /** US11: an empty file loads as an empty model. */
-    private static void testLoadEmptyFile() throws Exception {
+    @Test
+    public void testLoadEmptyFile() throws Exception {
         Path file = tempPim("empty.pim");
         Files.write(file, new byte[0]);
         check(PIMFileCodec.load(file).listRecords().isEmpty(), "empty file is empty model");
     }
 
     /** US11: a missing file reports a clear error. */
-    private static void testLoadMissingFile() throws Exception {
+    @Test
+    public void testLoadMissingFile() throws Exception {
         Path file = tempPim("missing.pim");
         Files.deleteIfExists(file);
         expect(IOException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject UnknownType with the specified exception. */
-    private static void testLoadUnknownType() throws Exception {
+    @Test
+    public void testLoadUnknownType() throws Exception {
         Path file = tempPim("UnknownType.pim");
         Files.write(file, Arrays.asList("type=DIARY", "id=x", "text=QQ=="));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject DuplicateField with the specified exception. */
-    private static void testLoadDuplicateField() throws Exception {
+    @Test
+    public void testLoadDuplicateField() throws Exception {
         Path file = tempPim("DuplicateField.pim");
         Files.write(file, Arrays.asList("type=NOTE", "id=x", "text=QQ==", "text=Qg=="));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject MissingField with the specified exception. */
-    private static void testLoadMissingField() throws Exception {
+    @Test
+    public void testLoadMissingField() throws Exception {
         Path file = tempPim("MissingField.pim");
         Files.write(file, Arrays.asList("type=TASK", "id=x"));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject InvalidTime with the specified exception. */
-    private static void testLoadInvalidTime() throws Exception {
+    @Test
+    public void testLoadInvalidTime() throws Exception {
         Path file = tempPim("InvalidTime.pim");
         Files.write(file, Arrays.asList("type=TASK", "id=x", "description=QQ==", "deadline=2026-13-01 09:00"));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject DuplicateId with the specified exception. */
-    private static void testLoadDuplicateId() throws Exception {
+    @Test
+    public void testLoadDuplicateId() throws Exception {
         Path file = tempPim("DuplicateId.pim");
         Files.write(file, Arrays.asList("type=NOTE", "id=same", "text=QQ==", "", "type=NOTE", "id=same", "text=QQ=="));
         expect(DuplicateRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject MalformedLine without returning a partial model. */
-    private static void testLoadMalformedLine() throws Exception {
+    @Test
+    public void testLoadMalformedLine() throws Exception {
         Path file = tempPim("MalformedLine.pim");
         Files.write(file, Arrays.asList("not-a-key-value"));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject UnknownField without returning a partial model. */
-    private static void testLoadUnknownField() throws Exception {
+    @Test
+    public void testLoadUnknownField() throws Exception {
         Path file = tempPim("UnknownField.pim");
         Files.write(file, Arrays.asList("type=NOTE", "id=x", "text=QQ==", "extra=yes"));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject MissingId without returning a partial model. */
-    private static void testLoadMissingId() throws Exception {
+    @Test
+    public void testLoadMissingId() throws Exception {
         Path file = tempPim("MissingId.pim");
         Files.write(file, Arrays.asList("type=NOTE", "text=QQ=="));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject MissingType without returning a partial model. */
-    private static void testLoadMissingType() throws Exception {
+    @Test
+    public void testLoadMissingType() throws Exception {
         Path file = tempPim("MissingType.pim");
         Files.write(file, Arrays.asList("id=x", "text=QQ=="));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject MissingDeadline without returning a partial model. */
-    private static void testLoadMissingDeadline() throws Exception {
+    @Test
+    public void testLoadMissingDeadline() throws Exception {
         Path file = tempPim("MissingDeadline.pim");
         Files.write(file, Arrays.asList("type=TASK", "id=x", "description=QQ=="));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));
     }
 
     /** US11: reject InvalidBase64 without returning a partial model. */
-    private static void testLoadInvalidBase64() throws Exception {
+    @Test
+    public void testLoadInvalidBase64() throws Exception {
         Path file = tempPim("InvalidBase64.pim");
         Files.write(file, Arrays.asList("type=NOTE", "id=x", "text=@@"));
         expect(InvalidRecordException.class, () -> PIMFileCodec.load(file));

@@ -7,7 +7,7 @@ Push-Location -LiteralPath $PSScriptRoot
 try {
     $append = 'false'
     foreach ($suite in @('model.ModelCoreTest','model.SearchTest','model.PersistenceTest','model.AtomicSaveTest')) {
-        & java "-javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=build/model-coverage.exec,append=$append" -cp 'build/classes;build/test-classes' $suite
+        & java "-javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=build/model-coverage.exec,append=$append" -cp 'build/classes;build/test-classes;lib/junit-4.13.2.jar;lib/hamcrest-core-1.3.jar' org.junit.runner.JUnitCore $suite
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         $append = 'true'
     }

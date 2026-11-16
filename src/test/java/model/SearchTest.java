@@ -1,5 +1,7 @@
 package model;
 
+import org.junit.Test;
+
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -9,10 +11,10 @@ public final class SearchTest {
     private static final LocalDateTime T1 = LocalDateTime.of(2026, 10, 1, 9, 0);
     private static final LocalDateTime T2 = LocalDateTime.of(2026, 10, 2, 9, 0);
 
-    public static void main(String[] args) { TestSupport.runSuite(SearchTest.class); }
 
     /** FR-07: type = note|task|event|contact keeps insertion order. */
-    private static void testTypeFilter() {
+    @Test
+    public void testTypeFilter() {
         PIMModel model = new PIMModel();
         Note first = model.createNote("Buy milk");
         Task task = model.createTask("Finish report", T2);
@@ -39,7 +41,8 @@ public final class SearchTest {
     }
 
     /** FR-07: contains matches one text field, ignoring case, and skips other types. */
-    private static void testTextContains() {
+    @Test
+    public void testTextContains() {
         PIMModel model = new PIMModel();
         Note milk = model.createNote("Buy milk");
         Note tea = model.createNote("Milk tea");
@@ -73,7 +76,8 @@ public final class SearchTest {
     }
 
     /** FR-07: DeadlineBefore; exact expected records and ordering. */
-    private static void testDeadlineBefore() {
+    @Test
+    public void testDeadlineBefore() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -88,7 +92,8 @@ public final class SearchTest {
     }
 
     /** FR-07: DeadlineAfter; exact expected records and ordering. */
-    private static void testDeadlineAfter() {
+    @Test
+    public void testDeadlineAfter() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -103,7 +108,8 @@ public final class SearchTest {
     }
 
     /** FR-07: DeadlineEqual; exact expected records and ordering. */
-    private static void testDeadlineEqual() {
+    @Test
+    public void testDeadlineEqual() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -118,7 +124,8 @@ public final class SearchTest {
     }
 
     /** FR-07: StartBefore; exact expected records and ordering. */
-    private static void testStartBefore() {
+    @Test
+    public void testStartBefore() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -133,7 +140,8 @@ public final class SearchTest {
     }
 
     /** FR-07: StartAfter; exact expected records and ordering. */
-    private static void testStartAfter() {
+    @Test
+    public void testStartAfter() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -148,7 +156,8 @@ public final class SearchTest {
     }
 
     /** FR-07: StartEqual; exact expected records and ordering. */
-    private static void testStartEqual() {
+    @Test
+    public void testStartEqual() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -163,7 +172,8 @@ public final class SearchTest {
     }
 
     /** FR-07: AlarmBefore; exact expected records and ordering. */
-    private static void testAlarmBefore() {
+    @Test
+    public void testAlarmBefore() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -178,7 +188,8 @@ public final class SearchTest {
     }
 
     /** FR-07: AlarmAfter; exact expected records and ordering. */
-    private static void testAlarmAfter() {
+    @Test
+    public void testAlarmAfter() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -193,7 +204,8 @@ public final class SearchTest {
     }
 
     /** FR-07: AlarmEqual; exact expected records and ordering. */
-    private static void testAlarmEqual() {
+    @Test
+    public void testAlarmEqual() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -208,7 +220,8 @@ public final class SearchTest {
     }
 
     /** FR-07: TimeOrder; exact expected records and ordering. */
-    private static void testTimeOrder() {
+    @Test
+    public void testTimeOrder() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -223,7 +236,8 @@ public final class SearchTest {
     }
 
     /** FR-07: invalid time criteria must leave all records unchanged. */
-    private static void testInvalidSearchTime() {
+    @Test
+    public void testInvalidSearchTime() {
         PIMModel model = new PIMModel();
         model.createNote("Buy milk");
         Task early = model.createTask("Early", T1);
@@ -241,7 +255,8 @@ public final class SearchTest {
     }
 
     /** FR-08: !, &&, and || combine criteria. && binds tighter than ||. */
-    private static void testLogic() {
+    @Test
+    public void testLogic() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Buy milk");
         Task report = model.createTask("Finish report", T2);
@@ -278,7 +293,8 @@ public final class SearchTest {
     }
 
     /** FR-08: malformed criteria fail clearly, and no match is an empty list. */
-    private static void testMalformedCriteria() {
+    @Test
+    public void testMalformedCriteria() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Buy milk");
         List<PIR> records = model.listRecords();
@@ -305,7 +321,8 @@ public final class SearchTest {
     }
 
     /** CLI calls PIMModel.search, which delegates to PIRSearch. */
-    private static void testModelSearch() {
+    @Test
+    public void testModelSearch() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Buy milk");
         Task task = model.createTask("Finish report", T2);
@@ -322,7 +339,8 @@ public final class SearchTest {
     }
 
     /** Spec edges: updates, one hit per record, invalid dates, and grouping. */
-    private static void testEdgeCases() {
+    @Test
+    public void testEdgeCases() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Old text");
         model.updateNote(note.getId(), "New milk");
@@ -379,27 +397,32 @@ public final class SearchTest {
     }
 
     /** FR-08: reject UnexpectedQuote syntax, even on an empty collection. */
-    private static void testRejectUnexpectedQuote() {
+    @Test
+    public void testRejectUnexpectedQuote() {
         expect(InvalidSearchException.class, () -> new PIMModel().search("text contains a\"b"));
     }
 
     /** FR-08: reject QuotedField syntax, even on an empty collection. */
-    private static void testRejectQuotedField() {
+    @Test
+    public void testRejectQuotedField() {
         expect(InvalidSearchException.class, () -> new PIMModel().search("\"type\" = note"));
     }
 
     /** FR-08: reject QuotedType syntax, even on an empty collection. */
-    private static void testRejectQuotedType() {
+    @Test
+    public void testRejectQuotedType() {
         expect(InvalidSearchException.class, () -> new PIMModel().search("type = \"note\""));
     }
 
     /** FR-08: reject TextOperator syntax, even on an empty collection. */
-    private static void testRejectTextOperator() {
+    @Test
+    public void testRejectTextOperator() {
         expect(InvalidSearchException.class, () -> new PIMModel().search("text = \"milk\""));
     }
 
     /** FR-08: reject TimeOperator syntax, even on an empty collection. */
-    private static void testRejectTimeOperator() {
+    @Test
+    public void testRejectTimeOperator() {
         expect(InvalidSearchException.class, () -> new PIMModel().search("deadline contains \"2026-10-01 09:00\""));
     }
 

@@ -3,7 +3,6 @@ Revised rehearsal script. Timing is a target, not a measured recording. Keep the
 # COMP3211 PIM · 逐页讲稿与提示
 
 排练目标 **4:50（290 秒）**：A/B 各约 70 秒，C/D 各约 75 秒（课程要求每人至少 1 分钟），留约 10 秒给停顿和切页；实际录制必须计时。
-Canva 备注保留逐页讲稿；第 6、8 页已同步本轮修订，演示者视图可直接查看。
 
 | 讲者 | 页码 | 时间 | 内容 |
 |---|---|---|---|
@@ -114,12 +113,12 @@ Canva 备注保留逐页讲稿；第 6、8 页已同步本轮修订，演示者�
 
 ## 第 8 页 · 经验教训 + 收尾（D，40 秒）
 
-> Our lesson is to test the state after failure, not only the error message. Suppose a saved collection already exists and a staged write fails midway. The test compares the original file byte for byte and checks that the temporary file is removed. A thrown exception alone would miss data loss. This led to staging before atomic replacement. All 56 named model cases pass, with 99.30 percent line coverage. Coverage shows execution; the state assertions provide evidence about behaviour. Thank you.
+> Our lesson is to test the state after failure, not only the error message. Suppose a saved collection already exists and a staged write fails midway. The test compares the original file byte for byte and checks that the temporary file is removed. A thrown exception alone would miss data loss. This led to staging before atomic replacement. All 56 JUnit model tests pass, with 99.30 percent line coverage measured by JaCoCo. Coverage shows execution; the state assertions provide evidence about behaviour. Thank you.
 
 **提示**
 
 - 这是唯一的“经验教训”页，评分看重观点，不要念数字清单。
-- 数字放慢：**ninety-six point one one percent**、**twenty-two**。
+- 数字放慢：**ninety-nine point three zero percent**、**fifty-six**。
 - 最后一句 “Thank you” 后停 2 秒，看着镜头，等提问；不要加 “that's all”。
 
 ---
@@ -135,7 +134,7 @@ Canva 备注保留逐页讲稿；第 6、8 页已同步本轮修订，演示者�
 ## 可能被问到的问题
 
 1. **为什么用 UUID 而不是自增 ID？** 稳定、跨文件不冲突；用户输入时支持唯一前缀，不用敲满 36 位。
-2. **为什么不用 JUnit？** 用自包含的 main 入口，免构建工具也能跑；失败时退出码非零，可自动执行。
+2. **为什么使用 JUnit？** 模型测试使用 JUnit 4.13.2 的 @Test 和 JUnitCore 自动发现、执行并报告结果；失败时退出码非零。JUnit/Hamcrest 仅用于测试，应用运行时仍只依赖 Java 标准库。CLI 集成检查单独执行。
 3. **为什么 .pim 里用 Base64？** 文本可能含换行、`=`、中文，Base64 后每行一个字段，解析不会断。
 4. **99.30% 的覆盖率说明什么？** 只覆盖 model（CLI 排除在外），证明行被执行，不证明行为正确——这正是我们的教训。
 5. **搜索会不会改数据？** 不会；搜索只读快照，测试里也对比了前后集合。

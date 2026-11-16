@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Linux / Codex Cloud entry point; also supports Git Bash on Windows.
+# Linux / Linux development environment entry point; also supports Git Bash on Windows.
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 
@@ -14,7 +14,8 @@ done
 
 separator=:
 case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) separator=';' ;; esac
-classpath="build/classes${separator}build/test-classes"
+testlibs="lib/junit-4.13.2.jar${separator}lib/hamcrest-core-1.3.jar"
+classpath="build/classes${separator}build/test-classes${separator}${testlibs}"
 main_sources=()
 while IFS= read -r -d '' source; do main_sources+=("$source"); done < <(find src/main/java -name '*.java' -print0)
 mkdir -p build/classes
@@ -27,17 +28,17 @@ fi
 test_sources=()
 while IFS= read -r -d '' source; do test_sources+=("$source"); done < <(find src/test/java -name '*.java' -print0)
 mkdir -p build/test-classes
-javac -encoding UTF-8 -g -Xlint:-options -source 8 -target 8 -cp build/classes -d build/test-classes "${test_sources[@]}"
+javac -encoding UTF-8 -g -Xlint:-options -source 8 -target 8 -cp "build/classes${separator}${testlibs}" -d build/test-classes "${test_sources[@]}"
 suites=(model.ModelCoreTest model.SearchTest model.PersistenceTest model.AtomicSaveTest)
 for suite in "${suites[@]}"; do
-  java -Dfile.encoding=UTF-8 -cp "$classpath" "$suite"
+  java -Dfile.encoding=UTF-8 -cp "$classpath" org.junit.runner.JUnitCore "$suite"
 done
 java -Dfile.encoding=UTF-8 -cp "$classpath" cli.CliTest
 
 if [[ "$mode" == coverage ]]; then
   append=false
   for suite in "${suites[@]}"; do
-    java "-javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=build/model-coverage.exec,append=$append" -Dfile.encoding=UTF-8 -cp "$classpath" "$suite"
+    java "-javaagent:lib/org.jacoco.agent-0.8.11-runtime.jar=destfile=build/model-coverage.exec,append=$append" -Dfile.encoding=UTF-8 -cp "$classpath" org.junit.runner.JUnitCore "$suite"
     append=true
   done
   java -jar lib/org.jacoco.cli-0.8.11-nodeps.jar report build/model-coverage.exec \

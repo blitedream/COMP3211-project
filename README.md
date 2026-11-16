@@ -6,13 +6,13 @@ The application uses only Java standard libraries.
 
 ## Requirements
 
-- Windows with PowerShell, or Linux / Codex Cloud with Bash.
+- Windows with PowerShell, or Linux / Linux development environment with Bash.
 - A JDK with `java` and `javac` available on PATH.
 - Verified with Eclipse Temurin JDK 21.0.3. Compilation targets Java 8;
   the current revision was tested on JDK 21.0.3, not re-tested on a Java 8 runtime.
 
 No Maven, Gradle or runtime dependency installation is needed. The JAR files in
-`lib/` are JaCoCo coverage tools, not application dependencies.
+`lib/` are JUnit 4.13.2, Hamcrest 1.3 and JaCoCo test tools, not application dependencies.
 
 ## Start the application
 
@@ -78,7 +78,7 @@ prove complete coverage.
 The existing [JaCoCo HTML report](coverage-report/index.html) is a stored report.
 Running the commands above does **not** regenerate coverage measurements.
 
-## Linux / Codex Cloud
+## Linux / Linux development environment
 
 Use a JDK (21 recommended to match the locally verified version), Bash and Git.
 No Maven, Gradle or application dependency installation is required.
@@ -136,3 +136,7 @@ coverage report, coverage report, videos or presentation deliverables.
 The script writes `build/COMP3211_submission_<timestamp>.zip` and verifies that
 `Honour_Declaration.pdf` sits at the archive root, as the course requires.
 
+
+## JUnit model tests
+
+The 56 model cases use JUnit 4 `@Test` and `JUnitCore`. Run `bash pim.sh test` or `./run_tests.ps1`; CLI integration checks remain a separate executable. Add both JUnit and Hamcrest JARs from `lib/` to the IDE test classpath. Application execution needs neither JAR.

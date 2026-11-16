@@ -53,6 +53,6 @@ files present. Required human files are still absent, so no final submission ZIP
 
 Remaining human work only: demo.mp4 <=4 minutes; presentation.mp4 <=5 minutes with
 each member >=1 minute and required face/ID visibility; official Honour_Declaration.pdf
-with agreed contribution percentages and truthful AI acknowledgement. Then run
+with agreed contribution percentages and all required declarations completed. Then run
 make_submission.ps1 and inspect the final ZIP. Final timing/fluency and teacher quality
 judgments cannot be certified by this audit. Full marks are an objective, not a guarantee.

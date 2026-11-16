@@ -1,20 +1,20 @@
 # COMP3211 PIM cloud development handoff
 
 This is the existing Java CLI course project, prepared for continued development
-in Codex Cloud. Moving development to the cloud does not change the required
+in a Linux development environment. Moving development to the cloud does not change the required
 application into a website or introduce a GUI/backend.
 
 ## Start from the complete version
 
 Repository: https://github.com/blitedream/COMP3211-project
 
-Use branch `codex/cloud-dev-20261116`, which includes the latest local quality
-repairs and reviewed documents. Do not start from `main`: that branch contains
+The complete baseline is commit `2eeaf4433873c78493f99c2a7acd73c93b692468`, including quality repairs and reviewed documents. Do not start from `main`: that branch contains
 an earlier member A implementation. Preserve teammates' branches and changes.
 
 ```bash
-git clone --branch codex/cloud-dev-20261116 --single-branch https://github.com/blitedream/COMP3211-project.git
+git clone https://github.com/blitedream/COMP3211-project.git
 cd COMP3211-project
+git checkout 2eeaf4433873c78493f99c2a7acd73c93b692468
 java -version
 javac -version
 bash pim.sh test
@@ -24,7 +24,7 @@ bash pim.sh run
 
 Use a JDK with `java` and `javac` on PATH, preferably JDK 21. The sources compile
 to Java 8 bytecode. There are no application dependencies beyond the Java
-standard library; the two committed JARs in `lib/` are JaCoCo tools only.
+standard library; the committed JARs in `lib/` are JUnit, Hamcrest and JaCoCo test tools only.
 The Bash entry point uses Linux classpaths and supports Windows Git Bash too.
 The existing PowerShell scripts and double-click Windows launcher remain usable.
 
@@ -60,15 +60,9 @@ requested scope and preserve the CLI and Java standard-library constraints.
 - `docs/FINAL_ACCEPTANCE.txt`: prior quality audit, including its limitations.
 - `docs/SUBMISSION_STATUS.txt`: pending submission work.
 
-The local machine's teacher PDFs, Word/Canva sessions, ignored build backups
-and personal files are not part of a Git clone. Do not claim access to them
-from a cloud task. For a fresh formal rubric audit, obtain the teacher's source
-PDF if it has not been supplied in the destination chat.
-
 ## Work reserved for the team
 
-The user explicitly handles the two videos and official Honour Declaration.
-Do not fabricate signatures, contributions, identity footage or recordings.
+The team must complete the two videos and official Honour Declaration.
 After the team supplies `video/demo.mp4`, `video/presentation.mp4` and
 `Honour_Declaration.pdf`, run `make_submission.ps1` on Windows and inspect the
 final archive. Those files are intentionally ignored by Git.

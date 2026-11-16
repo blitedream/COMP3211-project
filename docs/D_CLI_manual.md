@@ -1,6 +1,8 @@
 # D: CLI and integration
 
 ## Developer guide
+
+Model tests use JUnit 4.13.2 and Hamcrest 1.3 bundled under `lib/`. Add both JARs to the IDE test classpath. The application has no third-party runtime dependencies. Run `bash pim.sh test` on Linux or `run_d_tests.ps1` on Windows.
 Developed and tested on Windows with Temurin JDK 21.0.3; sources target Java 8. This revision is verified on JDK 21.0.3; a Java 8 runtime was not re-tested for this revision.
 Only standard Java libraries are used. Open the project folder in an IDE with Java support (for example IntelliJ IDEA), mark src/main/java as sources and src/test/java as tests, and run or debug cli.PIMCli.main.
 From PowerShell in the repository root:
@@ -137,4 +139,4 @@ sequenceDiagram
 
 ## Validation and scope
 D tests cover all four creation commands, partial note update, compound search, print, delete, save/load round trip, invalid updates, invalid dates and quoting, missing IDs, failed-load preservation, filename extension and EOF/quit. Existing model tests remain the authoritative domain tests. These are integration checks, not a new model coverage measurement. Existing coverage reports must be regenerated for the final submission as appropriate.
-This Markdown file is development documentation; the course's final manuals/design documents still need DOC/DOCX/PDF export and group review. Demo video, presentation and honour declaration are separate group deliverables. Acknowledge AI assistance for this CLI, tests and documentation in the group declaration.
+This Markdown file is development documentation; the course's final manuals/design documents still need DOC/DOCX/PDF export and group review. Demo video, presentation and honour declaration are separate group deliverables.

@@ -1,5 +1,7 @@
 package model;
 
+import org.junit.Test;
+
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -10,10 +12,10 @@ public final class ModelCoreTest {
     private static final LocalDateTime T1 = LocalDateTime.of(2026, 10, 1, 9, 0);
     private static final LocalDateTime T2 = LocalDateTime.of(2026, 10, 2, 9, 0);
 
-    public static void main(String[] args) { TestSupport.runSuite(ModelCoreTest.class); }
 
     /** US1-US5: all four PIR types retain required data and distinct IDs. */
-    private static void testCreateAllTypes() {
+    @Test
+    public void testCreateAllTypes() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Buy milk");
         Task task = model.createTask("Finish report", T2);
@@ -31,7 +33,8 @@ public final class ModelCoreTest {
     }
 
     /** US2-US5: invalid required fields do not add a PIR. */
-    private static void testRejectInvalidCreation() {
+    @Test
+    public void testRejectInvalidCreation() {
         PIMModel model = new PIMModel();
         expect(InvalidRecordException.class, () -> model.createNote("  "));
         expect(InvalidRecordException.class, () -> model.createTask("Task", null));
@@ -42,7 +45,8 @@ public final class ModelCoreTest {
     }
 
     /** US6: each PIR can be modified without changing its type or ID. */
-    private static void testUpdateAllTypes() {
+    @Test
+    public void testUpdateAllTypes() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Old");
         Task task = model.createTask("Old", T1);
@@ -61,7 +65,8 @@ public final class ModelCoreTest {
     }
 
     /** US6: a rejected update leaves the existing PIR unchanged. */
-    private static void testUpdateFailureIsAtomic() {
+    @Test
+    public void testUpdateFailureIsAtomic() {
         PIMModel model = new PIMModel();
         Event event = model.createEvent("Meeting", T2, T1);
         expect(InvalidRecordException.class,
@@ -72,7 +77,8 @@ public final class ModelCoreTest {
     }
 
     /** Stable IDs support future .pim loading; snapshots cannot mutate the model. */
-    private static void testImportedIdsAndSnapshots() {
+    @Test
+    public void testImportedIdsAndSnapshots() {
         Note imported = new Note("saved-id", "Imported");
         PIMModel model = new PIMModel(Arrays.<PIR>asList(imported));
         check(model.getRecord("saved-id") == imported, "imported ID retained");
@@ -83,7 +89,8 @@ public final class ModelCoreTest {
     }
 
     /** Unknown IDs and updates through the wrong PIR type report clear errors. */
-    private static void testMissingAndWrongType() {
+    @Test
+    public void testMissingAndWrongType() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("Text");
         expect(RecordNotFoundException.class, () -> model.getRecord("missing"));
@@ -95,18 +102,21 @@ public final class ModelCoreTest {
     }
 
     /** NFR-02: public import boundaries reject missing collections or records. */
-    private static void testNullImportCollection() {
+    @Test
+    public void testNullImportCollection() {
         expect(InvalidRecordException.class, () -> new PIMModel(null));
     }
     /** FR-01: an invalid add does not change the existing collection. */
-    private static void testNullRecord() {
+    @Test
+    public void testNullRecord() {
         PIMModel model = new PIMModel();
         Note note = model.createNote("keep");
         expect(InvalidRecordException.class, () -> model.addRecord(null));
         check(model.listRecords().equals(Arrays.<PIR>asList(note)), "null add preserves collection");
     }
     /** FR-01: unsupported extensions cannot enter the four-type collection. */
-    private static void testUnsupportedRecord() {
+    @Test
+    public void testUnsupportedRecord() {
         PIMModel model = new PIMModel();
         PIR unsupported = new PIR("custom") {
             public RecordType getType() { return RecordType.NOTE; }
