@@ -1,5 +1,3 @@
-Revised rehearsal script. Timing is a target, not a measured recording. Keep the active speaker face visible throughout. Replace name/group placeholders before recording.
-
 # COMP3211 PIM · 逐页讲稿与提示
 
 排练目标 **4:50（290 秒）**：A/B 各约 70 秒，C/D 各约 75 秒（课程要求每人至少 1 分钟），留约 10 秒给停顿和切页；实际录制必须计时。
@@ -13,7 +11,7 @@ Revised rehearsal script. Timing is a target, not a measured recording. Keep the
 
 ## 通用提示
 
-- 每人开口第一句先报名字、**出示学生证 3 秒**，再进入内容——课程硬性要求，不做会扣一半分。
+- 每人开头报名字并出示学生证，保持约 3 秒；讲者的人脸全程可见。
 - 录屏时看**摄像头**，不是看屏幕；语速约 140 词/分钟，比平时慢一点。
 - 在句子结束时切页，不要边说边切；切完停半秒再开口。
 - 数字（99.30%、56）放慢、咬清楚。
@@ -25,19 +23,19 @@ Revised rehearsal script. Timing is a target, not a measured recording. Keep the
 
 **English script**
 
-> Good morning. We are Group [X], and this is my student ID. Our project is a command-line personal information manager in Java. It keeps notes, tasks, events and contacts in one collection, and saves them to a single .pim file so a session can be resumed later. I will start with the scope.
+> Hi, I am [A], and this is my student ID. Our project is a personal information manager written in Java. You use it from a terminal to keep notes, tasks, events and contacts together. You can save the collection as a .pim file and load it again next time. I will start with the four record types.
 
 **提示**
 
 - 先露脸、举学生证，停 3 秒再说话。
 - 不要念标题；一句话说清“我们做了什么、给谁用”。
-- 最后一句 “I will start with the scope” 是给第 2 页的过渡，说完直接切。
+- 说完四种记录类型后切到第 2 页。
 
 ---
 
 ## 第 2 页 · 四类记录（A，45 秒）
 
-> The system supports four record types. A note is plain text. A task has a description and a deadline. An event has a description, a start time and an alarm. A contact has a name, an address and a mobile number. Every record gets a stable ID, and one set of commands — create, update, search, print, delete, save and load — works across all four types. That is the whole scope: a terminal, one collection and one file, with no GUI and no database.
+> A note stores plain text. A task has a description and a deadline. An event has a description, a start time and an alarm time. A contact has a name, an address and a mobile number. Each record has an ID that stays the same when we edit it or load it from a file. The same commands work with all four types: create, update, search, print, delete, save and load. For example, we can update a task deadline without changing its description.
 
 **提示**
 
@@ -49,20 +47,19 @@ Revised rehearsal script. Timing is a target, not a measured recording. Keep the
 
 ## 第 3 页 · 需求 1：创建 PIR（B，35 秒）
 
-> My name is [B], and this is my student ID. The first requirement is creating a record. Here we create a task with a description and a deadline. The system keeps both fields and returns a unique ID, which later commands use to print, update or delete that record. It is verifiable in two directions: the stored record keeps every field, and invalid input, such as a blank description or the thirtieth of February, is rejected without changing the collection.
+> I am [B], and this is my student ID. The first requirement is to create a record. This command creates a task with the description Finish report and a deadline. It returns an ID that we can use to print, update or delete the task. To check the result, we compare the stored description and deadline with the input. We also try a blank description and an impossible date, such as February thirtieth. Both should give an error and leave the collection unchanged.
 
 **提示**
 
 - 开头出示学生证，再讲内容。
 - 指命令行那一行；**不要念 UUID**，说 “returns a unique ID” 就够。
-- 说 “two directions” 时用手比 1、2：字段保留 / 非法输入被拒绝且集合不变。
-- 这句是评分点：需求要 *可验证*，所以给出“怎么看出来满足了”。
+- 说明两种检查：有效输入保存正确字段；无效输入报错且不改变记录。
 
 ---
 
 ## 第 4 页 · 需求 2：定义搜索条件（B，35 秒）
 
-> A criterion can test three things: the record type, whether a text field contains a string, or how a time compares with a given instant. Comparisons combine with and, or and not, and parentheses control grouping. Not binds tightest, then and, then or — In the expression shown, parentheses group tasks and events first, and the description must contain report for either type. The expression language is small, and the SRS fixes it.
+> Search conditions can check the record type, look for text in a field, or compare a time with a given date and time. We combine conditions using and, or and not. Not is evaluated first, then and, then or; parentheses change the grouping. In this example, the parentheses select tasks or events. The description must also contain report. A task or event without that word will not match.
 
 **提示**
 
@@ -75,14 +72,14 @@ Revised rehearsal script. Timing is a target, not a measured recording. Keep the
 
 ## 第 5 页 · 需求 3：搜索 PIR（C，35 秒）
 
-> I am [C], and this is my student ID. The third requirement is the search itself. The criterion goes unchanged into the model, which returns the matching records. The CLI prints a count, then each record in insertion order, once per record. Search is read-only: it never changes the collection, and zero matches is a normal answer, not an error. The same criterion that defines the search also defines its expected output.
+> I am [C], and this is my student ID. The third requirement is to return the records that match a search. The CLI passes the condition to the model and prints the results. Here, the task Finish report matches, so the output starts with one record. Each matching record appears once, in insertion order, with its ID and fields. A search leaves the collection unchanged. If nothing matches, the program prints zero records and waits for the next command.
 
 **提示**
 
 - 先亮学生证。
 - 指 “1 record(s)” 那行，再指记录行。
 - 三个关键词加重：**read-only**、**insertion order**、**zero is normal**。
-- 不要提性能或大数据量，本项目没做这个承诺。
+- 结合屏幕上的任务说明为什么匹配，不额外展开性能测试。
 
 ---
 
@@ -113,13 +110,13 @@ Revised rehearsal script. Timing is a target, not a measured recording. Keep the
 
 ## 第 8 页 · 经验教训 + 收尾（D，40 秒）
 
-> Our lesson is to test the state after failure, not only the error message. Suppose a saved collection already exists and a staged write fails midway. The test compares the original file byte for byte and checks that the temporary file is removed. A thrown exception alone would miss data loss. This led to staging before atomic replacement. All 56 JUnit model tests pass, with 99.30 percent line coverage measured by JaCoCo. Coverage shows execution; the state assertions provide evidence about behaviour. Thank you.
+> Our main testing lesson concerns failed saves. An error message does not tell us whether the old file survived. In this test, we start with an existing file and interrupt the staged write. We then compare the original bytes and check that the temporary file has been removed. These checks test the promise that a failed save preserves the previous data. All 56 model tests pass in JUnit, and JaCoCo reports 99.30 percent line coverage. The assertions check the results behind that number. Thank you.
 
 **提示**
 
-- 这是唯一的“经验教训”页，评分看重观点，不要念数字清单。
+- 先讲保存失败的例子，再报测试数量和覆盖率。
 - 数字放慢：**ninety-nine point three zero percent**、**fifty-six**。
-- 最后一句 “Thank you” 后停 2 秒，看着镜头，等提问；不要加 “that's all”。
+- 说完 “Thank you” 后停 2 秒，再结束录像。
 
 ---
 
@@ -133,11 +130,11 @@ Revised rehearsal script. Timing is a target, not a measured recording. Keep the
 
 ## 可能被问到的问题
 
-1. **为什么用 UUID 而不是自增 ID？** 稳定、跨文件不冲突；用户输入时支持唯一前缀，不用敲满 36 位。
+1. **为什么用 UUID 而不是自增 ID？** 不需要维护计数器，碰撞概率很低；载入时仍检查重复 ID。命令支持唯一前缀，不用敲满 36 位。
 2. **为什么使用 JUnit？** 模型测试使用 JUnit 4.13.2 的 @Test 和 JUnitCore 自动发现、执行并报告结果；失败时退出码非零。JUnit/Hamcrest 仅用于测试，应用运行时仍只依赖 Java 标准库。CLI 集成检查单独执行。
 3. **为什么 .pim 里用 Base64？** 文本可能含换行、`=`、中文，Base64 后每行一个字段，解析不会断。
-4. **99.30% 的覆盖率说明什么？** 只覆盖 model（CLI 排除在外），证明行被执行，不证明行为正确——这正是我们的教训。
+4. **99.30% 的覆盖率说明什么？** 56 项模型测试执行了 model 中的 428/431 行；CLI 和测试报告器不计入。返回值、文件内容和异常由断言检查。
 5. **搜索会不会改数据？** 不会；搜索只读快照，测试里也对比了前后集合。
 
 
-Revision 16 Nov 2026: A/B target 70 seconds each; C/D target 75 seconds each. Total target 4:50 including IDs, leaving 10 seconds for transitions. Actual timing requires rehearsal. Slide 6: trace both model/search and codec/atomic-writer paths. Slide 8: point to Given, When, Then and explain byte equality after injected failure. Coverage 428/431 lines and 257/268 branches; 56 model cases.
+录制前将 [A]、[B]、[C]、[D] 换成真实姓名，按完整流程排练计时。每人至少 1 分钟，总长不超过 5 分钟。

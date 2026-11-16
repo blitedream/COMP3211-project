@@ -77,8 +77,7 @@ each of 56 cases: 9 core, 22 search, 19 persistence and 6 atomic-save cases.
 JUnit continues running the remaining cases after a failure. Three separate
 test-infrastructure checks verify the reporter; they do not count toward the
 56 model cases or model coverage. The additional CLI suite
-prints `CLI integration checks passed` on success. Test counts alone do not
-prove complete coverage.
+prints `CLI integration checks passed` on success.
 
 The existing [JaCoCo HTML report](coverage-report/index.html) is a stored report.
 Running the commands above does **not** regenerate coverage measurements.
@@ -94,9 +93,8 @@ bash pim.sh run        # interactive pim> prompt
 bash pim.sh coverage   # tests and fresh model-only JaCoCo measurements
 ```
 
-Cloud coverage output is written to `build/cloud-coverage-report/index.html`
-and `build/cloud-coverage.xml`, leaving the submitted report intact until the
-new measurements have been reviewed. These commands work from any directory;
+Coverage output is written to `build/cloud-coverage-report/index.html`
+and `build/cloud-coverage.xml`. These commands work from any directory;
 relative PIM save paths resolve inside this repository.
 
 ## Project structure and contributions
@@ -119,12 +117,11 @@ relative PIM save paths resolve inside this repository.
 - [User manual](docs/final/03_User_Manual.pdf)
 - [Developer manual](docs/final/04_Developer_Manual.pdf)
 - [Presentation slides](docs/final/05_Presentation.pdf)
-- [Recording guide](docs/final/06_Recording_Guide.pdf)
 - [Requirements coverage](Requirements_Coverage.pdf)
 - [Model line coverage](Model_Line_Coverage.pdf)
 
-These PDFs are the formal submission documents. The ZIP stores the six formal
-documents under `documents/`, with this README's paths adjusted automatically.
+The ZIP stores the SRS, design, manuals and slides under `documents/`.
+Both coverage reports are at the ZIP root.
 
 ## JUnit model tests
 
@@ -158,5 +155,5 @@ without both MP4 files and the completed Honour Declaration. File presence
 does not verify signatures, contribution percentages, video timing or faces;
 the group must review these before submission.
 
-Repository authoring material and the cloud handoff remain under `docs/`;
-only the formal PDFs are included in the submission ZIP.
+The [recording guide](docs/final/06_Recording_Guide.pdf) and rehearsal script in
+`presentation_final/` are for group preparation and are not included in the ZIP.

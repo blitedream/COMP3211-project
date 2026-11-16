@@ -88,7 +88,6 @@ $folders = [ordered]@{
     'src'             = 'src'
     'lib'             = 'lib'
     'coverage-report' = 'coverage-report'
-    'docs/final'      = 'documents'
     'video'           = 'video'
 }
 foreach ($name in $folders.Keys) {
@@ -97,12 +96,14 @@ foreach ($name in $folders.Keys) {
     Copy-Item -LiteralPath $from -Destination (Join-Path $stage $folders[$name]) -Recurse -Force
 }
 
-# Validate the actual staged layout, not just the source folders.
+# Copy the five course documents; recording guides stay in the working project.
+New-Item -ItemType Directory -Path (Join-Path $stage 'documents') | Out-Null
 foreach ($name in @('01_SRS.pdf','02_Design.pdf','03_User_Manual.pdf','04_Developer_Manual.pdf','05_Presentation.pdf')) {
-    $document = Join-Path $stage "documents/$name"
-    if (-not (Test-Path -LiteralPath $document -PathType Leaf) -or (Get-Item -LiteralPath $document).Length -eq 0) {
+    $sourceDocument = Join-Path $root "docs/final/$name"
+    if (-not (Test-Path -LiteralPath $sourceDocument -PathType Leaf) -or (Get-Item -LiteralPath $sourceDocument).Length -eq 0) {
         throw "Missing or empty formal document: $name"
     }
+    Copy-Item -LiteralPath $sourceDocument -Destination (Join-Path $stage "documents/$name")
 }
 $checkedLinks = 0
 foreach ($match in [regex]::Matches($readme, '\]\(([^)]+)\)')) {

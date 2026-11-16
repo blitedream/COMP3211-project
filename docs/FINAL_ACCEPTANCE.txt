@@ -59,19 +59,24 @@ to presentation_final/PIM_Presentation.pdf and docs/final/05_Presentation.pdf.
 
 Document QA: SRS DOCX rendered through Word; formal PDFs rendered and reviewed.
 Updated design, developer manual and both root reports were regenerated and rendered;
-changed pages were visually reviewed. Formal PDFs have no empty pages. The SRS and
-Canva deck were preserved. Both presentation PDF copies are byte-identical.
+changed pages were visually reviewed. Formal PDFs have no empty pages. The numbered
+SRS requirements and Canva deck were preserved. Both presentation PDF copies are byte-identical.
 
 Packaging: make_submission.ps1 -Preview creates a clearly labelled incomplete archive
 with NOT_FOR_SUBMISSION.txt; it never pretends that videos or the declaration exist.
 The packaged README links to documents/ and omits repository-only authoring steps.
-All 11 README file links resolve; formal PDFs match source bytes. The packager checks
+All 10 README file links resolve; formal PDFs match source bytes. The packager checks
 required PDFs and README links before writing the ZIP, and closes its archive handles.
 The extracted preview passed model, reporter and CLI checks from a fresh Chinese/space
 path. A direct CLI smoke check created all four types, searched, round-tripped Unicode
 through a spaced .pim filename, replaced the collection on load and exited normally.
 Without -Preview, missing human deliverables correctly cause status 1 before packaging.
 No final submission ZIP has been created; the preview is not suitable for submission.
+
+Editorial update: shortened the SRS preface, repeated report caveats and developer
+authoring instructions; revised the rehearsal script for spoken delivery. The ZIP
+contains five course PDFs plus the two root reports. The recording guide remains
+in the working project. Requirement tables, test data and authorship records remain.
 
 Local evidence: build/named-runner-verification.log, build/final-coverage-verification.log,
 build/runner-failure-exit.log, build/java8-verification/test-results.log,
