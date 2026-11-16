@@ -10,11 +10,7 @@ in git (see `.gitignore`).
 
 `package_submission.ps1` refuses to build the ZIP while either file is missing.
 
-The local `demo.mp4` prepared on 17 November 2026 is 3 minutes 47 seconds,
-1920 x 1080, 25 fps, H.264 MP4. It has English captions and no audio track.
-It is explicitly labelled as an automated replay of actual CLI output, with
-commands and responses captured from the unmodified Java application. The
-save/load section uses two separate Java processes and verifies identical IDs
-and record fields after restart. The group should watch it before submission.
-Local capture and verification records are in `build/demo-video/cli-session.json`
-and `build/demo-video/verification.json`. The MP4 remains local and is not in Git.
+The group will provide a personally recorded system demonstration for subtitling.
+The automated replay made on 17 November 2026 was not selected for submission;
+it is archived under `build/demo-video/automated_demo_unused.mp4` and is excluded
+from the submission package. Add the reviewed, subtitled recording as `demo.mp4`.

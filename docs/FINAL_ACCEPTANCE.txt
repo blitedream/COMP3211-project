@@ -92,7 +92,7 @@ model cases, 3 reporter checks and CLI integration checks; model lines remain
 design diagrams and the Canva PDF are unchanged. The updated SRS and manual/report
 pages were rendered and reviewed. Evidence: build/rename-verification/result.txt.
 
-Local demo prepared: video/demo.mp4 is a 227-second, 1920x1080, 25 fps H.264 MP4
+Unused demo draft: a 227-second, 1920x1080, 25 fps H.264 MP4 was prepared
 with English captions and no audio. It is labelled as an automated CLI replay.
 Commands and stdout were captured from the unmodified Java application. The demo
 verifies four record types, compound/date/NOT searches, partial update, rejected
@@ -101,8 +101,11 @@ process. Restored IDs and fields match the saved collection. All 5,675 frames
 decoded without errors; 21 encoded scene samples matched the reviewed renders.
 Evidence: build/demo-video/cli-session.json and build/demo-video/verification.json.
 This verifies content and media integrity; it is not an instructor's acceptance.
+The group chose to record the demo themselves. The automated draft is archived at
+build/demo-video/automated_demo_unused.mp4 and is excluded from submission.
 
-Remaining human work: review demo.mp4; record presentation.mp4 <=5 minutes with
+Remaining: record the demo, add and review subtitles, save as demo.mp4 <=4 minutes;
+record presentation.mp4 <=5 minutes with
 each member >=1 minute and required face/ID visibility; official Honour_Declaration.pdf
 with agreed contribution percentages and all required declarations completed. Then run
 package_submission.ps1 and inspect the final ZIP. Final timing/fluency and teacher quality
